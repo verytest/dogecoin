@@ -215,7 +215,7 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
                 // Construct block index object
                 CBlockIndex* pindexNew = InsertBlockIndex(diskindex.GetBlockHash());
                 pindexNew->pprev          = InsertBlockIndex(diskindex.hashPrev);
-                pindexNew->pauxpow        = diskindex.pauxpow;
+                //pindexNew->pauxpow        = diskindex.pauxpow;
                 pindexNew->nHeight        = diskindex.nHeight;
                 pindexNew->nFile          = diskindex.nFile;
                 pindexNew->nDataPos       = diskindex.nDataPos;
@@ -233,6 +233,7 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
                     if (!diskindex.pauxpow->check(diskindex.GetBlockHash(), pindexNew->nVersion.GetChainId(), Params().GetConsensus(pindexNew->nHeight))) {
                         return error("LoadBlockIndex(): CheckProofOfWork failed: %s", pindexNew->ToString());
                     }
+                    diskindex.pauxpow.reset();
                 } else {
                     if (!CheckProofOfWork(pindexNew->hashBlockPoW, pindexNew->nBits, Params().GetConsensus(pindexNew->nHeight)))
                         return error("LoadBlockIndex(): CheckProofOfWork failed: %s", pindexNew->ToString());
