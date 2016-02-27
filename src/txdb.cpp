@@ -230,10 +230,10 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
                 pindexNew->hashBlockPoW   = diskindex.hashBlockPoW;
 
                 if (pindexNew->nVersion.IsAuxpow()) {
-                    if (!diskindex.pauxpow->check(diskindex.GetBlockHash(), pindexNew->nVersion.GetChainId(), Params().GetConsensus(pindexNew->nHeight))) {
+                    /*if (!diskindex.pauxpow->check(diskindex.GetBlockHash(), pindexNew->nVersion.GetChainId(), Params().GetConsensus(pindexNew->nHeight))) {
                         return error("LoadBlockIndex(): CheckProofOfWork failed: %s", pindexNew->ToString());
                     }
-                    diskindex.pauxpow.reset();
+                    diskindex.pauxpow.reset();*/
                 } else {
                     if (!CheckProofOfWork(pindexNew->hashBlockPoW, pindexNew->nBits, Params().GetConsensus(pindexNew->nHeight)))
                         return error("LoadBlockIndex(): CheckProofOfWork failed: %s", pindexNew->ToString());
