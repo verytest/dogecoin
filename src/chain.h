@@ -322,7 +322,7 @@ public:
         if (this->nVersion.IsAuxpow()) {
             if (ser_action.ForRead())
                 pauxpow.reset(new CAuxPow());
-            assert(pauxpow);
+            //assert(pauxpow);
             READWRITE(*pauxpow);
         } else if (ser_action.ForRead())
             pauxpow.reset();
