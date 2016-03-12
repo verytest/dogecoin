@@ -60,7 +60,7 @@ Release Process
 
   Only missing files will be fetched, so this is safe to re-run for each build.
 
-###Build Dogecoin Core for Linux, Windows, and OS X:
+###Build Dogecoin Core for Linux, Windows, OS X and ARM:
   
 	./bin/gbuild --commit dogecoin=v${VERSION} ../dogecoin/contrib/gitian-descriptors/gitian-linux.yml
 	./bin/gsign --signer $SIGNER --release ${VERSION}-linux --destination ../gitian.sigs/ ../dogecoin/contrib/gitian-descriptors/gitian-linux.yml
@@ -73,6 +73,9 @@ Release Process
 	./bin/gsign --signer $SIGNER --release ${VERSION}-osx-unsigned --destination ../gitian.sigs/ ../dogecoin/contrib/gitian-descriptors/gitian-osx.yml
 	mv build/out/dogecoin-*-osx-unsigned.tar.gz inputs/dogecoin-osx-unsigned.tar.gz
 	mv build/out/dogecoin-*.tar.gz build/out/dogecoin-*.dmg ../
+	./bin/gbuild --commit dogecoin=v${VERSION} ../dogecoin/contrib/gitian-descriptors/gitian-linux-armhf.yml
+	./bin/gsign --signer $SIGNER --release ${VERSION}-armhf --destination ../gitian.sigs/ ../dogecoin/contrib/gitian-descriptors/gitian-linux-armhf.yml
+	mv build/out/dogecoin-*.tar.gz ../
 	popd
   Build output expected:
 
@@ -80,6 +83,7 @@ Release Process
   2. linux 32-bit and 64-bit dist tarballs (dogecoin-${VERSION}-linux[32|64].tar.gz)
   3. windows 32-bit and 64-bit unsigned installers and dist zips (dogecoin-${VERSION}-win[32|64]-setup-unsigned.exe, dogecoin-${VERSION}-win[32|64].zip)
   4. OSX unsigned installer and dist tarball (dogecoin-${VERSION}-osx-unsigned.dmg, dogecoin-${VERSION}-osx64.tar.gz)
+  5. ARM dist tarballs (dogecoin-${VERSION}-armhf.tar.gz)
   5. Gitian signatures (in gitian.sigs/${VERSION}-<linux|{win,osx}-unsigned>/(your gitian key)/
 
 ###Next steps:
@@ -90,6 +94,7 @@ Commit your signature to gitian.sigs:
 	git add ${VERSION}-linux/${SIGNER}
 	git add ${VERSION}-win-unsigned/${SIGNER}
 	git add ${VERSION}-osx-unsigned/${SIGNER}
+	git add ${VERSION}-armhf/${SIGNER}
 	git commit -a
 	git push  # Assuming you can push to the gitian.sigs tree
 	popd
