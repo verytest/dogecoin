@@ -2773,6 +2773,12 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
                                     __func__, pindexPrev->nHeight + 1, consensusParams.nHeightEffective),
                          REJECT_INVALID, "early-auxpow-block");
 
+    // Check contextual AuxPow constraints
+    if (!ContextualCheckAuxPowFlags(block, consensusParams))
+        return state.DoS(100, error("%s : invalid auxpow flags in header at height %d, parameters effective from %d",
+                                    __func__, pindexPrev->nHeight + 1, consensusParams.nHeightEffective),
+                         REJECT_INVALID, "invalid-auxpow-header-flags");
+
     // Check proof of work
     if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
         return state.DoS(100, error("%s: incorrect proof of work at height %d", __func__, nHeight),

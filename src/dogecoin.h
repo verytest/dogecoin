@@ -22,6 +22,9 @@ unsigned int CalculateDogecoinNextWorkRequired(const CBlockIndex* pindexLast, in
  */
 bool CheckAuxPowProofOfWork(const CBlockHeader& block, const Consensus::Params& params);
 
+//TODO docs
+bool ContextualCheckAuxPowFlags(const CBlockHeader& block, const Consensus::Params& params);
+
 int64_t GetDogecoinDustFee(const std::vector<CTxOut> &vout, CFeeRate &baseFeeRate);
 
 /** Wrapper to make decisions based on AuxPoW version */

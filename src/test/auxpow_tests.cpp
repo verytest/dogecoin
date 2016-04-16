@@ -347,7 +347,8 @@ BOOST_AUTO_TEST_CASE(auxpow_pow)
 {
     /* Use regtest parameters to allow mining with easy difficulty.  */
     SelectParams(CBaseChainParams::REGTEST);
-    const Consensus::Params& params = Params().GetConsensus(371337);
+    const Consensus::Params& params = Params().GetConsensus(0);
+    const Consensus::Params& ctxParams = Params().GetConsensus(19);
 
     const arith_uint256 target = (~arith_uint256(0) >> 1);
     CBlockHeader block;
@@ -357,35 +358,36 @@ BOOST_AUTO_TEST_CASE(auxpow_pow)
 
     block.nVersion = 1;
     mineBlock(block, true);
-    BOOST_CHECK(CheckAuxPowProofOfWork(block, params));
+    BOOST_CHECK(ContextualCheckAuxPowFlags(block, ctxParams));
 
     // Dogecoin block version 2 can be both AuxPoW and regular, so test 3
 
     block.nVersion = 3;
     mineBlock(block, true);
-    BOOST_CHECK(!CheckAuxPowProofOfWork(block, params));
+    BOOST_CHECK(!ContextualCheckAuxPowFlags(block, ctxParams));
 
-    block.SetBaseVersion (2, params.nAuxpowChainId);
+    block.SetBaseVersion (2, ctxParams.nAuxpowChainId);
     mineBlock(block, true);
-    BOOST_CHECK(CheckAuxPowProofOfWork(block, params));
+    BOOST_CHECK(ContextualCheckAuxPowFlags(block, ctxParams));
 
-    block.SetChainId(params.nAuxpowChainId + 1);
+    block.SetChainId(ctxParams.nAuxpowChainId + 1);
     mineBlock(block, true);
-    BOOST_CHECK(!CheckAuxPowProofOfWork(block, params));
+    BOOST_CHECK(!ContextualCheckAuxPowFlags(block, ctxParams));
 
     /* Check the case when the block does not have auxpow (this is true
      right now).  */
 
-    block.SetChainId(params.nAuxpowChainId);
+    block.SetChainId(ctxParams.nAuxpowChainId);
     block.SetAuxpowVersion(true);
     mineBlock(block, true);
-    BOOST_CHECK(!CheckAuxPowProofOfWork(block, params));
+    BOOST_CHECK(!ContextualCheckAuxPowFlags(block, ctxParams));
 
     block.SetAuxpowVersion(false);
     mineBlock(block, true);
-    BOOST_CHECK(CheckAuxPowProofOfWork(block, params));
+    BOOST_CHECK(ContextualCheckAuxPowFlags(block, ctxParams));
     mineBlock(block, false);
-    BOOST_CHECK(!CheckAuxPowProofOfWork(block, params));
+    BOOST_CHECK(ContextualCheckAuxPowFlags(block, ctxParams) &&
+                !CheckAuxPowProofOfWork(block, params));
 
     /* ****************************************** */
     /* Check the case that the block has auxpow.  */
@@ -424,7 +426,7 @@ BOOST_AUTO_TEST_CASE(auxpow_pow)
     BOOST_CHECK(hashAux != block.GetHash());
     block.SetAuxpowVersion(false);
     BOOST_CHECK(hashAux == block.GetHash());
-    BOOST_CHECK(!CheckAuxPowProofOfWork(block, params));
+    BOOST_CHECK(!ContextualCheckAuxPowFlags(block, params));
 
     /* Modifying the block invalidates the PoW.  */
     block.SetAuxpowVersion(true);
@@ -435,7 +437,7 @@ BOOST_AUTO_TEST_CASE(auxpow_pow)
     block.SetAuxpow(new CAuxPow(builder.get()));
     BOOST_CHECK(CheckAuxPowProofOfWork(block, params));
     tamperWith(block.hashMerkleRoot);
-    BOOST_CHECK(!CheckAuxPowProofOfWork(block, params));
+    BOOST_CHECK(!ContextualCheckAuxPowFlags(block, params));
 }
 
 /* ************************************************************************** */
