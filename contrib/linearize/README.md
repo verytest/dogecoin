@@ -1,3 +1,5 @@
+# Tested on python 3.7
+
 # Linearize
 Construct a linear, no-fork, best version of the Dogecoin blockchain. The scripts
 run using Python 3 but are compatible with Python 2.
