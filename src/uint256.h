@@ -135,6 +135,9 @@ public:
     {
         return ReadLE64(data);
     }
+
+    static const uint256 ZERO;
+    static const uint256 ONE;
 };
 
 /* uint256 from const char *.

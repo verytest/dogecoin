@@ -151,6 +151,7 @@ BITCOIN_CORE_H = \
   timedata.h \
   torcontrol.h \
   txdb.h \
+  txrequest.h \
   txmempool.h \
   ui_interface.h \
   undo.h \
@@ -214,6 +215,7 @@ libdogecoin_server_a_SOURCES = \
   timedata.cpp \
   torcontrol.cpp \
   txdb.cpp \
+  txrequest.cpp \
   txmempool.cpp \
   ui_interface.cpp \
   validation.cpp \
