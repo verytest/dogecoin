@@ -17,8 +17,6 @@ packages:
 - "binutils-arm-linux-gnueabihf"
 - "g++-4.8-multilib"
 - "gcc-4.8-multilib"
-- "gcc-multilib"
-- "g++-multilib"
 - "binutils-gold"
 - "git-core"
 - "pkg-config"
