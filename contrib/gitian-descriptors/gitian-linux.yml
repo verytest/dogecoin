@@ -2,7 +2,7 @@
 name: "dogecoin-linux-1.14"
 enable_cache: true
 suites:
-- "xenial"
+- "trusty"
 architectures:
 - "amd64"
 packages:
@@ -17,6 +17,8 @@ packages:
 - "binutils-arm-linux-gnueabihf"
 - "g++-4.8-multilib"
 - "gcc-4.8-multilib"
+- "gcc-multilib"
+- "g++-multilib"
 - "binutils-gold"
 - "git-core"
 - "pkg-config"
