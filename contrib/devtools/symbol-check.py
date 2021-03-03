@@ -66,6 +66,8 @@ b'ld-linux.so.2', # 32-bit dynamic linker
 b'libX11-xcb.so.1', # part of X11
 b'libX11.so.6', # part of X11
 b'libxcb.so.1', # part of X11
+b'libxkbcommon.so.0', # keyboard keymapping
+b'libxkbcommon-x11.so.0', # keyboard keymapping
 b'libfontconfig.so.1', # font support
 b'libfreetype.so.6', # font parsing
 b'libdl.so.2' # programming interface to dynamic linker
@@ -160,5 +162,3 @@ if __name__ == '__main__':
                 retval = 1
 
     exit(retval)
-
-
