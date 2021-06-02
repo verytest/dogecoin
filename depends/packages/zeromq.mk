@@ -1,9 +1,8 @@
 package=zeromq
-$(package)_version=4.1.5
-$(package)_download_path=https://github.com/zeromq/zeromq4-1/releases/download/v$($(package)_version)/
+$(package)_version=4.3.4
+$(package)_download_path=https://github.com/zeromq/libzmq/releases/download/v$($(package)_version)/
 $(package)_file_name=$(package)-$($(package)_version).tar.gz
-$(package)_sha256_hash=04aac57f081ffa3a2ee5ed04887be9e205df3a7ddade0027460b8042432bdbcf
-$(package)_patches=9114d3957725acd34aa8b8d011585812f3369411.patch 9e6745c12e0b100cd38acecc16ce7db02905e27c.patch
+$(package)_sha256_hash=c593001a89f5a85dd2ddf564805deb860e02471171b3f204944857336295c3e5
 
 define $(package)_set_vars
   $(package)_config_opts=--without-documentation --disable-shared --without-libsodium --disable-curve
@@ -12,8 +11,6 @@ define $(package)_set_vars
 endef
 
 define $(package)_preprocess_cmds
-  patch -p1 < $($(package)_patch_dir)/9114d3957725acd34aa8b8d011585812f3369411.patch && \
-  patch -p1 < $($(package)_patch_dir)/9e6745c12e0b100cd38acecc16ce7db02905e27c.patch && \
   ./autogen.sh
 endef
 
@@ -22,7 +19,7 @@ define $(package)_config_cmds
 endef
 
 define $(package)_build_cmds
-  $(MAKE) libzmq.la
+  $(MAKE) ./src/libzmq.la
 endef
 
 define $(package)_stage_cmds
