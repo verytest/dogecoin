@@ -92,8 +92,8 @@ jobs:
             os: ubuntu-20.04
             packages: cmake imagemagick libcap-dev librsvg2-bin libz-dev libtiff-tools libtinfo5 python3-setuptools xorriso libtinfo5
             run-tests: false
-            dep-opts: ""
-            config-opts: "--enable-gui --enable-reduce-exports"
+            dep-opts: "NO_QT=1"
+            config-opts: "--enable-reduce-exports"
             goal: deploy
             sdk: 10.11
 
