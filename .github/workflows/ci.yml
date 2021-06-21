@@ -15,6 +15,7 @@ jobs:
       CCACHE_TEMPDIR: /tmp/.ccache-temp
       CCACHE_COMPRESS: "1"
       PYTHON_DEBUG: "1"
+      SDK_URL: https://bitcoincore.org/depends-sources/sdks
       WINEDEBUG: fixme-all
 
     strategy:
@@ -86,6 +87,15 @@ jobs:
             dep-opts: ""
             config-opts: "--enable-reduce-exports"
             goal: install
+          - name: x86_64-macos
+            host: x86_64-apple-darwin11
+            os: ubuntu-20.04
+            packages: cmake imagemagick libcap-dev librsvg2-bin libz-dev libtiff-tools libtinfo5 python3-setuptools xorriso libtinfo5
+            run-tests: false
+            dep-opts: ""
+            config-opts: "--enable-gui --enable-reduce-exports"
+            goal: deploy
+            sdk: 10.11
 
     runs-on: ${{ matrix.os }}
 
@@ -107,6 +117,23 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: SDK cache
+        if: ${{ matrix.sdk }}
+        uses: actions/cache@v2
+        env:
+          cache-name: sdk
+        with:
+          path: ./depends/sdk-sources
+          key: ${{ matrix.name }}-${{ env.cache-name }}
+
+      - name: Install SDK
+        if: ${{ matrix.sdk }}
+        run: |
+          mkdir -p ./depends/sdk-sources
+          mkdir -p ./depends/SDKs
+          curl --location --fail $SDK_URL/MacOSX${{ matrix.sdk }}.sdk.tar.gz -o depends/sdk-sources/MacOSX${{ matrix.sdk }}.sdk.tar.gz
+          tar -C depends/SDKs -xf depends/sdk-sources/MacOSX${{ matrix.sdk }}.sdk.tar.gz
 
       - name: Dependency cache
         uses: actions/cache@v2
