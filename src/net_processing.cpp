@@ -2321,6 +2321,9 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             // from there instead.
             LogPrint("net", "more getheaders (%d) to end to peer=%d (startheight:%d)\n", pindexLast->nHeight, pfrom->id, pfrom->nStartingHeight);
             connman.PushMessage(pfrom, msgMaker.Make(NetMsgType::GETHEADERS, chainActive.GetLocator(pindexLast), uint256()));
+        } else { //plddr: extra debug info
+          if (nCount == MAX_HEADERS_RESULTS && !hasNewHeaders)
+          LogPrint("net", "got max headers (%d) from peer=%d but there's nothing new there!\n", MAX_HEADERS_RESULTS, pfrom->id);
         }
 
         bool fCanDirectFetch = CanDirectFetch(chainparams.GetConsensus(0));
@@ -2546,7 +2549,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 // Relay
                 pfrom->setKnown.insert(alertHash);
                 {
-                    
+
                     connman.ForEachNode([&alert](CNode* pnode)
                     {
                         pnode->PushAlert(alert);
