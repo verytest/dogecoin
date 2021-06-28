@@ -120,6 +120,7 @@ testScripts = [
     'zapwallettxes.py',
     'importmulti.py',
     'mempool_limit.py',
+    'mempool_spam.py',
     'merkle_blocks.py',
     'receivedby.py',
     'abandonconflict.py',
