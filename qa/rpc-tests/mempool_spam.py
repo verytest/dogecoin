@@ -39,9 +39,8 @@ class MempoolSpamTest(BitcoinTestFramework):
         self.sync_all()
 
         for i in range (2):
-            for _ in range (30):
-                txs = create_lots_of_big_transactions(self.nodes[0], self.txouts, utxos[30*i:30*i+30], 1, self.relayfee * i)
-                txids.append(txs)
+            txids.append([])
+            txids[i] = create_lots_of_big_transactions(self.nodes[0], self.txouts, utxos[30*i:30*i+30], 30, self.relayfee * i)
 
         #create a mempool tx with fee > self.txouts
         us0 = utxos.pop()
