@@ -42,7 +42,6 @@ class MempoolSpamTest(BitcoinTestFramework):
             for _ in range (30):
                 txs = create_lots_of_big_transactions(self.nodes[0], self.txouts, utxos[30*i:30*i+30], 1, self.relayfee * i)
                 txids.append(txs)
-                self.sync_all()
 
         #create a mempool tx with fee > self.txouts
         us0 = utxos.pop()
@@ -58,17 +57,15 @@ class MempoolSpamTest(BitcoinTestFramework):
         for i in range (2,4):
             txids.append([])
             txids[i] = create_lots_of_big_transactions(self.nodes[0], self.txouts, utxos[30*i:30*i+30], 30, self.relayfee*i)
-            self.sync_all()
 
         # our transaction should still live in the mempool
         assert(self.nodes[0].getmempoolinfo()['size'] == self.nodes[1].getmempoolinfo()['size'])
         for i in range(self.num_nodes):
             assert(txid in self.nodes[i].getrawmempool())
-            #assert(self.nodes[1].getmempoolinfo()['size'] < sum(1 for _ in it.chain.from_iterable(txids)))
+            assert(self.nodes[i].getmempoolinfo()['size'] < sum(1 for _ in it.chain.from_iterable(txids)))
 
         # mine a block on node 1
         self.nodes[1].generate(1)
-        self.sync_all()
 
         # our transaction should be mined
         for i in range(self.num_nodes):
