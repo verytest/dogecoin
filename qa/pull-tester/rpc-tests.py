@@ -102,6 +102,7 @@ testScripts = [
     # longest test should go first, to favor running tests in parallel
     'wallet-hd.py',
     'walletbackup.py',
+    'p2p-acceptblock.py',
     # vv Tests less than 5m vv
     'p2p-fullblocktest.py',
     'fundrawtransaction.py',
@@ -189,7 +190,6 @@ testScriptsExt = [
     'forknotify.py',
     'invalidateblock.py',
     'maxblocksinflight.py',
-    'p2p-acceptblock.py',
     'replace-by-fee.py',
 ]
 
