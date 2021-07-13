@@ -4,7 +4,7 @@ $(package)_version_suffix=k
 $(package)_download_path=https://www.openssl.org/source
 $(package)_file_name=$(package)-$($(package)_version)$($(package)_version_suffix).tar.gz
 $(package)_sha256_hash=892a0875b9872acd04a9fde79b1f943075d5ea162415de3047c327df33fbaee5
-$(package)_patches=remove-build-date.patch
+$(package)_patches=remove-build-date.patch narrow-build-scope.patch
 
 define $(package)_set_vars
 $(package)_config_env=AR="$($(package)_ar)" RANLIB="$($(package)_ranlib)" CC="$($(package)_cc)"
@@ -18,6 +18,7 @@ $(package)_config_opts+=no-dtls1
 $(package)_config_opts+=no-ec_nistp_64_gcc_128
 $(package)_config_opts+=no-gost
 $(package)_config_opts+=no-heartbeats
+$(package)_config_opts+=no-legacy
 $(package)_config_opts+=no-idea
 $(package)_config_opts+=no-md2
 $(package)_config_opts+=no-mdc2
@@ -31,6 +32,7 @@ $(package)_config_opts+=no-shared
 $(package)_config_opts+=no-ssl-trace
 $(package)_config_opts+=no-ssl2
 $(package)_config_opts+=no-ssl3
+$(package)_config_opts+=no-tests
 $(package)_config_opts+=no-unit-test
 $(package)_config_opts+=no-weak-ssl-ciphers
 $(package)_config_opts+=no-whirlpool
@@ -51,7 +53,8 @@ $(package)_config_opts_i686_mingw32=mingw
 endef
 
 define $(package)_preprocess_cmds
-  patch -p1 < $($(package)_patch_dir)/remove-build-date.patch
+  patch -p1 < $($(package)_patch_dir)/remove-build-date.patch && \
+	patch -p1 < $($(package)_patch_dir)/narrow-build-scope.patch
 endef
 
 define $(package)_config_cmds

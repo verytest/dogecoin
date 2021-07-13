@@ -1,0 +1,12 @@
+diff -dur a/Configure b/Configure
+--- a/Configure	2021-07-13 20:33:52.142024464 +0000
++++ b/Configure	2021-07-13 21:05:51.300750599 +0000
+@@ -318,7 +318,7 @@
+ my $default_ranlib;
+
+ # Top level directories to build
+-$config{dirs} = [ "crypto", "ssl", "engines", "apps", "test", "util", "tools", "fuzz" ];
++$config{dirs} = [ "crypto", "ssl", "engines" ];
+ # crypto/ subdirectories to build
+ $config{sdirs} = [
+     "objects",
