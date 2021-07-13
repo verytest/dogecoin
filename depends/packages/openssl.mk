@@ -18,7 +18,6 @@ $(package)_config_opts+=no-dtls1
 $(package)_config_opts+=no-ec_nistp_64_gcc_128
 $(package)_config_opts+=no-gost
 $(package)_config_opts+=no-heartbeats
-$(package)_config_opts+=no-legacy
 $(package)_config_opts+=no-idea
 $(package)_config_opts+=no-md2
 $(package)_config_opts+=no-mdc2
