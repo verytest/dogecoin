@@ -1,0 +1,12 @@
+diff -dur a/util/mkbuildinf.pl b/util/mkbuildinf.pl
+--- a/util/mkbuildinf.pl	2021-07-13 20:33:52.290024629 +0000
++++ b/util/mkbuildinf.pl	2021-07-13 20:34:15.922051191 +0000
+@@ -28,7 +28,7 @@
+  */
+
+ #define PLATFORM "platform: $platform"
+-#define DATE "built on: $date"
++#define DATE ""
+
+ /*
+  * Generate compiler_flags as an array of individual characters. This is a

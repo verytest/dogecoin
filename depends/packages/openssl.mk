@@ -4,6 +4,7 @@ $(package)_version_suffix=k
 $(package)_download_path=https://www.openssl.org/source
 $(package)_file_name=$(package)-$($(package)_version)$($(package)_version_suffix).tar.gz
 $(package)_sha256_hash=892a0875b9872acd04a9fde79b1f943075d5ea162415de3047c327df33fbaee5
+$(package)_patches=remove-build-date.patch
 
 define $(package)_set_vars
 $(package)_config_env=AR="$($(package)_ar)" RANLIB="$($(package)_ranlib)" CC="$($(package)_cc)"
@@ -50,7 +51,7 @@ $(package)_config_opts_i686_mingw32=mingw
 endef
 
 define $(package)_preprocess_cmds
-  sed -i.old "/define DATE/d" util/mkbuildinf.pl
+  patch -p1 < $($(package)_patch_dir)/remove-build-date.patch
 endef
 
 define $(package)_config_cmds
