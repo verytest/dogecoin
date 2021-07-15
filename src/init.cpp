@@ -1044,7 +1044,13 @@ bool AppInitParameterInteraction()
         return InitError(strprintf("acceptnonstdtxn is not currently supported for %s chain", chainparams.NetworkIDString()));
     nBytesPerSigOp = GetArg("-bytespersigop", nBytesPerSigOp);
 
-    nDustLimit = GetArg("-dustlimit", nDustLimit);
+    if (IsArgSet("-dustlimit"))
+    {
+        CAmount n = nDustLimit;
+        if (!ParseMoney(GetArg("-dustlimit", ""), n))
+            return InitError(AmountErrMsg("dustlimit", GetArg("-dustlimit", "")));
+        nDustLimit = n;
+    }
 
 #ifdef ENABLE_WALLET
     if (!CWallet::ParameterInteraction())
