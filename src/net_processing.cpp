@@ -2308,6 +2308,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         assert(pindexLast);
         UpdateBlockAvailability(pfrom->GetId(), pindexLast->GetBlockHash());
 
+        /* PL: kill this completely because hasNewHeaders is always false.
         // If we already know the last header in the message, then it contains
         // no new information for us.  In this case, we do not request
         // more headers later.  This prevents multiple chains of redundant
@@ -2325,6 +2326,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
           if (nCount == MAX_HEADERS_RESULTS && !hasNewHeaders)
           LogPrint("net", "got max headers (%d) from peer=%d but there's nothing new there!\n", MAX_HEADERS_RESULTS, pfrom->id);
         }
+        */
 
         bool fCanDirectFetch = CanDirectFetch(chainparams.GetConsensus(0));
         // If this set of headers is valid and ends in a block with at least as
