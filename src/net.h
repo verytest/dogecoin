@@ -681,6 +681,8 @@ public:
     CAmount lastSentFeeFilter;
     int64_t nextSendTimeFeeFilter;
 
+    std::atomic<int64_t> nPendingHeaderRequests;
+
     // Alert relay
     std::vector<CAlert> vAlertToSend;
 
