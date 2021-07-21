@@ -737,10 +737,10 @@ void RequestHeadersFrom(CNode* pto, CConnman& connman, const CBlockIndex* pindex
 {
   if (pto->nPendingHeaderRequests > 0) {
     if (fforceQuery) {
-      LogPrintf("net", "forcing getheaders request (%d) to peer=%d (%d open)\n",
+      LogPrint("net", "forcing getheaders request (%d) to peer=%d (%d open)\n",
                 pindex->nHeight, pto->id, pto->nPendingHeaderRequests);
     } else {
-      LogPrintf("net", "dropped getheaders request (%d) to peer=%d\n", pindex->nHeight, pto->id);
+      LogPrint("net", "dropped getheaders request (%d) to peer=%d\n", pindex->nHeight, pto->id);
       return;
     }
   }
