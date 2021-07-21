@@ -733,7 +733,7 @@ void Misbehaving(NodeId pnode, int howmuch)
 
 // Dogecoin -  1.14 specific fix: do not request headers from a peer we are
 //             already requesting headers from, unless forced.
-void RequestHeadersFrom(CNode* pto, CConnman& connman, CBlockLocator fromHeight, uint256 untilHash, bool fforceQuery)
+void RequestHeadersFrom(CNode* pto, CConnman& connman, uint64_t fromHeight, uint256 untilHash, bool fforceQuery)
 {
   if (pto->nPendingHeaderRequests > 0) {
     if (fforceQuery) {
@@ -2941,8 +2941,8 @@ bool SendMessages(CNode* pto, CConnman& connman, const std::atomic<bool>& interr
                 if (pindexStart->pprev)
                     pindexStart = pindexStart->pprev;
                 LogPrint("net", "initial getheaders (%d) to peer=%d (startheight:%d)\n", pindexStart->nHeight, pto->id, pto->nStartingHeight);
-                RequestHeadersFrom(pfrom, connman, chainActive.GetLocator(pindexStart), uint256(), false);
-                connman.PushMessage(pto, msgMaker.Make(NetMsgType::GETHEADERS, chainActive.GetLocator(pindexStart), uint256()));
+                RequestHeadersFrom(pto, connman, chainActive.GetLocator(pindexStart), uint256(), false);
+                //connman.PushMessage(pto, msgMaker.Make(NetMsgType::GETHEADERS, chainActive.GetLocator(pindexStart), uint256()));
             }
         }
 
