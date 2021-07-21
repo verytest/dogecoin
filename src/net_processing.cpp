@@ -733,7 +733,7 @@ void Misbehaving(NodeId pnode, int howmuch)
 
 // Dogecoin -  1.14 specific fix: do not request headers from a peer we are
 //             already requesting headers from, unless forced.
-void RequestHeadersFrom(CNode* pto, CConnman& connman, CBlockIndex* pindex, uint256 untilHash, bool fforceQuery)
+void RequestHeadersFrom(CNode* pto, CConnman& connman, const CBlockIndex* pindex, uint256 untilHash, bool fforceQuery)
 {
   if (pto->nPendingHeaderRequests > 0) {
     if (fforceQuery) {
