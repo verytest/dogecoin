@@ -738,16 +738,16 @@ void RequestHeadersFrom(CNode* pto, CConnman& connman, CBlockIndex* pindex, uint
   if (pto->nPendingHeaderRequests > 0) {
     if (fforceQuery) {
       LogPrintf("net", "forcing getheaders request (%d) to peer=%d (%d open)\n",
-                fromHeight, pto->id, pto->nPendingHeaderRequests);
+                pindex->nHeight, pto->id, pto->nPendingHeaderRequests);
     } else {
-      LogPrintf("net", "dropped getheaders request (%d) to peer=%d\n", fromHeight, pto->id);
+      LogPrintf("net", "dropped getheaders request (%d) to peer=%d\n", pindex->nHeight, pto->id);
       return;
     }
   }
 
   const CNetMsgMaker msgMaker(pto->GetSendVersion());
   connman.PushMessage(pto, msgMaker.Make(NetMsgType::GETHEADERS, chainActive.GetLocator(pindex), untilHash));
-  pfrom->nPendingHeaderRequests += 1;
+  pto->nPendingHeaderRequests += 1;
 
 }
 
