@@ -1747,9 +1747,6 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             return true;
         }
 
-        if (pfrom->nPendingHeaderRequests > 0)
-          pfrom->nPendingHeaderRequests -= 1;
-
         CNodeState *nodestate = State(pfrom->GetId());
         const CBlockIndex* pindex = NULL;
         if (locator.IsNull())
@@ -2248,6 +2245,9 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
     else if (strCommand == NetMsgType::HEADERS && !fImporting && !fReindex) // Ignore headers received while importing
     {
         std::vector<CBlockHeader> headers;
+
+        if (pfrom->nPendingHeaderRequests > 0)
+          pfrom->nPendingHeaderRequests -= 1;
 
         // Bypass the normal CBlock deserialization, as we don't want to risk deserializing 2000 full blocks.
         unsigned int nCount = ReadCompactSize(vRecv);
