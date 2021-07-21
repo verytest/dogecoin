@@ -745,7 +745,7 @@ void RequestHeadersFrom(CNode* pto, CConnman& connman, uint64_t fromHeight, uint
     }
   }
 
-  const CNetMsgMaker msgMaker(pfrom->GetSendVersion());
+  const CNetMsgMaker msgMaker(pto->GetSendVersion());
   connman.PushMessage(pto, msgMaker.Make(NetMsgType::GETHEADERS, fromHeight, untilHash));
   pfrom->nPendingHeaderRequests += 1;
 
