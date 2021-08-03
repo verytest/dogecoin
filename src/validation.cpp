@@ -2507,8 +2507,10 @@ bool ActivateBestChain(CValidationState &state, const CChainParams& chainparams,
     }
     do {
         boost::this_thread::interruption_point();
-        if (ShutdownRequested())
+        if (ShutdownRequested()) {
+            LogPrintf("ActivateBestChain: shutdown requested, breaking loop\n");
             break;
+        }
 
         const CBlockIndex *pindexFork;
         ConnectTrace connectTrace;
