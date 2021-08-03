@@ -2565,9 +2565,12 @@ bool ActivateBestChain(CValidationState &state, const CChainParams& chainparams,
             uiInterface.NotifyBlockTip(fInitialDownload, pindexNewTip);
         }
     } while (pindexNewTip != pindexMostWork);
+
     if (pindexNewTip != NULL) {
         CheckBlockIndex(chainparams.GetConsensus(pindexNewTip->nHeight));
     } else {
+        LogPrintf("ActivateBestChain: No best chain found while processing block %s",
+                  pblock ? pblock->GetHash() : "NULL");
         CheckBlockIndex(chainparams.GetConsensus(0));
     }
 
