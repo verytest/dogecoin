@@ -1006,6 +1006,7 @@ void static ProcessGetData(CNode* pfrom, const Consensus::Params& consensusParam
                             a_recent_block = most_recent_block;
                         }
                         CValidationState dummy;
+                        LogPrintf("Calling ActivateBestChain() from ProcessGetData (net_processing.cpp)\n");
                         ActivateBestChain(dummy, Params(), a_recent_block);
                     }
                     if (chainActive.Contains(mi->second)) {
@@ -1624,6 +1625,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 a_recent_block = most_recent_block;
             }
             CValidationState dummy;
+            LogPrintf("Calling ActivateBestChain() from ProcessMessage(GETBLOCKS) (net_processing.cpp)\n");
             ActivateBestChain(dummy, Params(), a_recent_block);
         }
 
@@ -2539,7 +2541,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 // Relay
                 pfrom->setKnown.insert(alertHash);
                 {
-                    
+
                     connman.ForEachNode([&alert](CNode* pnode)
                     {
                         pnode->PushAlert(alert);

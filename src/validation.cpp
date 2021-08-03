@@ -2569,7 +2569,7 @@ bool ActivateBestChain(CValidationState &state, const CChainParams& chainparams,
     if (pindexNewTip != NULL) {
         CheckBlockIndex(chainparams.GetConsensus(pindexNewTip->nHeight));
     } else {
-        LogPrintf("ActivateBestChain: No best chain found while processing block %s",
+        LogPrintf("ActivateBestChain: No best chain found while processing block %s\n",
                   pblock ? pblock->GetHash().ToString() : "<null>");
         CheckBlockIndex(chainparams.GetConsensus(0));
     }
@@ -2609,6 +2609,7 @@ bool PreciousBlock(CValidationState& state, const CChainParams& params, CBlockIn
         }
     }
 
+    LogPrintf("Calling ActivateBestChain() from PreciousBlock (validation.cpp)\n");
     return ActivateBestChain(state, params);
 }
 
@@ -3324,6 +3325,7 @@ bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<cons
     NotifyHeaderTip();
 
     CValidationState state; // Only used to report errors, not invalidity - ignore it
+    LogPrintf("Calling ActivateBestChain() from ProcessNewBlock (validation.cpp)\n");
     if (!ActivateBestChain(state, chainparams, pblock))
         return error("%s: ActivateBestChain failed", __func__);
 
@@ -4004,6 +4006,7 @@ bool LoadExternalBlockFile(const CChainParams& chainparams, FILE* fileIn, CDiskB
                 // Activate the genesis block so normal node progress can continue
                 if (hash == chainparams.GetConsensus(0).hashGenesisBlock) {
                     CValidationState state;
+                    LogPrintf("Calling ActivateBestChain() from LoadExternalBlockFile (validation.cpp)\n");
                     if (!ActivateBestChain(state, chainparams)) {
                         break;
                     }
