@@ -2506,11 +2506,6 @@ bool ActivateBestChain(CValidationState &state, const CChainParams& chainparams,
         pblock->GetHash().ToString(), pblock->hashPrevBlock.ToString());
     }
     do {
-        boost::this_thread::interruption_point();
-        if (ShutdownRequested()) {
-            LogPrintf("ActivateBestChain: shutdown requested, breaking loop\n");
-            break;
-        }
 
         const CBlockIndex *pindexFork;
         ConnectTrace connectTrace;
@@ -2573,6 +2568,16 @@ bool ActivateBestChain(CValidationState &state, const CChainParams& chainparams,
         if (pindexFork != pindexNewTip) {
             uiInterface.NotifyBlockTip(fInitialDownload, pindexNewTip);
         }
+
+        // Move the shutdown detection to the end of the loop, as done in
+        // dd2de47 on 1.21, to prevent pindexNewTip being nil for any other
+        // reason than being at the genesis block
+        boost::this_thread::interruption_point();
+        if (ShutdownRequested()) {
+            LogPrintf("ActivateBestChain: shutdown requested, breaking loop\n");
+            break;
+        }
+
     } while (pindexNewTip != pindexMostWork);
 
     if (pindexNewTip != NULL) {
