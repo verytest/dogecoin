@@ -2535,6 +2535,9 @@ bool ActivateBestChain(CValidationState &state, const CChainParams& chainparams,
 
             if (fInvalidFound) {
                 // Wipe cache, we may need another branch now.
+                LogPrintf("Invalid block %s found, height: %d, prev: %s",
+                  pindexMostWork->GetBlockHash().ToString(), pindexMostWork->nHeight,
+                  pindexMostWork->pprev->GetBlockHash().ToString());
                 pindexMostWork = NULL;
             }
             pindexNewTip = chainActive.Tip();
