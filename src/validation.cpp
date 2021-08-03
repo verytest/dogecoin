@@ -2502,7 +2502,7 @@ bool ActivateBestChain(CValidationState &state, const CChainParams& chainparams,
     CBlockIndex *pindexMostWork = NULL;
     CBlockIndex *pindexNewTip = NULL;
     if (pblock) {
-      LogPrintf("ActivateBestChain: activating best chain for block %s; prev: %s",
+      LogPrintf("ActivateBestChain: activating best chain for block %s; prev: %s\n",
         pblock->GetHash().ToString(), pblock->hashPrevBlock.ToString());
     }
     do {
