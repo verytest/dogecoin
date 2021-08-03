@@ -2570,7 +2570,7 @@ bool ActivateBestChain(CValidationState &state, const CChainParams& chainparams,
         CheckBlockIndex(chainparams.GetConsensus(pindexNewTip->nHeight));
     } else {
         LogPrintf("ActivateBestChain: No best chain found while processing block %s",
-                  pblock ? pblock->GetHash() : "NULL");
+                  pblock ? pblock->GetHash() : uint256());
         CheckBlockIndex(chainparams.GetConsensus(0));
     }
 
