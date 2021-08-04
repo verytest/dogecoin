@@ -36,7 +36,7 @@ std::vector<std::unique_ptr<CWalletTx>> wtxn;
 
 typedef set<pair<const CWalletTx*,unsigned int> > CoinSet;
 
-extern int nDustLimit;
+extern unsigned int nDustLimit;
 
 BOOST_FIXTURE_TEST_SUITE(wallet_tests, WalletTestingSetup)
 
