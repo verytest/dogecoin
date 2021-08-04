@@ -544,9 +544,9 @@ BOOST_AUTO_TEST_CASE(GetMinimumFee_dust_test_custom_dustlimit)
 
     // Confirm dust penalty fees are not added
 
-    BOOST_CHECK_EQUAL(CWallet::GetMinimumFee(tx, 963, 0, pool), 2 * nMinTxFee);
-    BOOST_CHECK_EQUAL(CWallet::GetMinimumFee(tx, 1000, 0, pool), 2 * nMinTxFee);
-    BOOST_CHECK_EQUAL(CWallet::GetMinimumFee(tx, 1999, 0, pool), 3 * nMinTxFee);
+    BOOST_CHECK_EQUAL(CWallet::GetMinimumFee(tx, 963, 0, pool), 1 * nMinTxFee);
+    BOOST_CHECK_EQUAL(CWallet::GetMinimumFee(tx, 1000, 0, pool), 1 * nMinTxFee);
+    BOOST_CHECK_EQUAL(CWallet::GetMinimumFee(tx, 1999, 0, pool), 2 * nMinTxFee);
 
     nDustLimit = COIN;
 }
