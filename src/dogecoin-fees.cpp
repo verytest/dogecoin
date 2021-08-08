@@ -18,6 +18,11 @@
 #endif
 
 #ifdef ENABLE_WALLET
+
+//mlumin: concept:  min relay fee 0.0001 doge;
+//mlumin: concept:  min fee configurable and defaulted at 0.01 DOGE later
+
+
 //mlumin 5/2021: walletfees, all attached to GetDogecoinWalletFeeRate which is just the newly exposed ::minWalletTxFee
 CAmount GetDogecoinWalletFee(size_t nBytes_)
 {
