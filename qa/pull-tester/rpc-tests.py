@@ -110,6 +110,7 @@ testScripts = [
     # vv Tests less than 2m vv
     'auxpow.py',
     'getauxblock.py',
+    'dogecoin-fees.py',
     'wallet.py',
     'wallet-accounts.py',
     # 'p2p-segwit.py',
