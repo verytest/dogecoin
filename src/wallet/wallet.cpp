@@ -3894,13 +3894,13 @@ bool CWallet::ParameterInteraction()
             return InitError(strprintf(_("Invalid amount for -paytxfee=<amount>: '%s' (must be at least %s)"),
                                        GetArg("-paytxfee", ""), ::minRelayTxFeeRate.ToString()));
         }
-	// if -mintxfee is not set, then a lower payTxFee overrides minTxFee
-	if (!IsArgSet("-mintxfee") && payTxFee < CWallet::minTxFee)
+
+	      // if -mintxfee is not set, then a lower payTxFee overrides minTxFee
+	      if (!IsArgSet("-mintxfee") && payTxFee < CWallet::minTxFee)
         {
-            InitWarning(strprintf(_("Automatically lowering -mintxfee to '%s'"), GetArg("-paytxfee","")));
             LogPrintf("%s: parameter interaction: -paytxfee=%s -> setting -mintxfee=%s\n", __func__, GetArg("-paytxfee",""), GetArg("-paytxfee",""));
-            CWallet:minTxFee = CFeeRate(nFeePerK,1000);
-	}
+            CWallet:minTxFee = CFeeRate(nFeePerK, 1000);
+	       }
     }
     if (IsArgSet("-maxtxfee"))
     {
