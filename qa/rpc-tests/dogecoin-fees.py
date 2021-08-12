@@ -42,11 +42,11 @@ class DogecoinFeesTest(BitcoinTestFramework):
         # planned v1.14.4 default parametrization
         # TODO: remove hardcoded params when the policy is fully implemented.
         params_01140400 = [
-            "-blockmintxfee=0.01",
-            "-minrelaytxfee=0.001",
-            "-paytxfee=1",
-            "-mintxfee=1",
-            "-dustlimit=0.001",
+            #"-blockmintxfee=0.01",
+            #"-minrelaytxfee=0.001",
+            #"-paytxfee=1",
+            #"-mintxfee=1",
+            #"-dustlimit=0.001",
             "-txindex",
             "-debug"
         ]
