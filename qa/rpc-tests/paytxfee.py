@@ -18,35 +18,26 @@ class PayTxFeeTest(BitcoinTestFramework):
         self.setup_clean_chain = True
         self.num_nodes = 4
 
-    def setup_network(self, split=False):
-        self.nodes = [] # all nodes have minrelaytxfee of 0.1
+    def setup_nodes(self, split=False):
+        nodes = []
 
         # node 0 has txindex to track txs
-        self.nodes.append(start_node(0, self.options.tmpdir,
-            ["-minrelaytxfee=0.1", "-debug", '-txindex']))
+        nodes.append(start_node(0, self.options.tmpdir,
+            ["-debug", '-txindex']))
 
         # node 1 pays 0.1 DOGE on all txs due to implicit mintxfee = paytxfee
-        self.nodes.append(start_node(1, self.options.tmpdir,
-            ["-paytxfee=0.1", "-minrelaytxfee=0.1", "-debug"]))
+        nodes.append(start_node(1, self.options.tmpdir,
+            ["-paytxfee=0.1", "-debug"]))
 
         # node 2 will always pay 1 DOGE on all txs because of explicit mintxfee
-        self.nodes.append(start_node(2, self.options.tmpdir,
-            ["-mintxfee=1", "-paytxfee=0.1", "-minrelaytxfee=0.1", "-debug"]))
+        nodes.append(start_node(2, self.options.tmpdir,
+            ["-mintxfee=1", "-paytxfee=0.1", "-debug"]))
 
         # node 3 will always pay 0.1 DOGE on all txs despite explicit mintxfee of 0.01
-        self.nodes.append(start_node(3, self.options.tmpdir,
-            ["-mintxfee=0.01", "-paytxfee=0.1", "-minrelaytxfee=0.1", "-debug"]))
+        nodes.append(start_node(3, self.options.tmpdir,
+            ["-mintxfee=0.01", "-paytxfee=0.1", "-debug"]))
 
-        # connect nodes
-        connect_nodes_bi(self.nodes,0,1)
-        connect_nodes_bi(self.nodes,1,2)
-        connect_nodes_bi(self.nodes,0,2)
-        connect_nodes_bi(self.nodes,0,3)
-        connect_nodes_bi(self.nodes,1,3)
-        connect_nodes_bi(self.nodes,2,3)
-
-        self.is_network_split=False
-        self.sync_all()
+        return nodes
 
     def run_test(self):
 
@@ -59,7 +50,7 @@ class PayTxFeeTest(BitcoinTestFramework):
         self.nodes[0].sendtoaddress(self.nodes[1].getnewaddress(), seed)
         self.nodes[0].sendtoaddress(self.nodes[2].getnewaddress(), seed)
         self.nodes[0].sendtoaddress(self.nodes[3].getnewaddress(), seed)
-        self.nodes[0].generate(5)
+        self.nodes[0].generate(1)
         self.sync_all()
 
         # create transactions
