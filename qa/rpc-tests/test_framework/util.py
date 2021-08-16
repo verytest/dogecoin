@@ -23,6 +23,8 @@ import subprocess
 import time
 import re
 import errno
+import predicate
+import inspect
 
 from . import coverage
 from .authproxy import AuthServiceProxy, JSONRPCException
@@ -226,6 +228,40 @@ def wait_for_bitcoind_start(process, url, i):
             if e.error['code'] != -28: # RPC in warmup?
                 raise # unknown JSON RPC exception
         time.sleep(0.25)
+
+def wait_until_helper(predicate, *, attempts=float('inf'), timeout=float('inf'), lock=None, timeout_factor=1.0):
+    """Sleep until the predicate resolves to be True.
+    Warning: Note that this method is not recommended to be used in tests as it is
+    not aware of the context of the test framework. Using the `wait_until()` members
+    from `BitcoinTestFramework` or `P2PInterface` class ensures the timeout is
+    properly scaled. Furthermore, `wait_until()` from `P2PInterface` class in
+    `p2p.py` has a preset lock.
+    """
+    if attempts == float('inf') and timeout == float('inf'):
+        timeout = 60
+    timeout = timeout * timeout_factor
+    attempt = 0
+    time_end = time.time() + timeout
+
+    while attempt < attempts and time.time() < time_end:
+        if lock:
+            with lock:
+                if predicate():
+                    return
+        else:
+            if predicate():
+                return
+        attempt += 1
+        time.sleep(0.05)
+
+    # Print the cause of the timeout
+    predicate_source = "''''\n" + inspect.getsource(predicate) + "'''"
+    print("wait_until() failed. Predicate: {}".format(predicate_source))
+    if attempt >= attempts:
+        raise AssertionError("Predicate {} not true after {} attempts".format(predicate_source, attempts))
+    elif time.time() >= time_end:
+        raise AssertionError("Predicate {} not true after {} seconds".format(predicate_source, timeout))
+    raise RuntimeError('Unreachable')
 
 def initialize_chain(test_dir, num_nodes, cachedir):
     """

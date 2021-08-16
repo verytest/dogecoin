@@ -6,7 +6,7 @@
 from test_framework.mininode import *
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import *
-import time
+import time, select, socket
 from test_framework.blocktools import create_block, create_coinbase, create_transaction
 
 '''
@@ -67,14 +67,22 @@ The test:
 # TestNode: bare-bones "peer".  Used mostly as a conduit for a test to sending
 # p2p messages to a node, generating the messages in the main testing logic.
 class TestNode(NodeConnCB):
-    def __init__(self):
+    def __init__(self, timeout_factor=1):
         NodeConnCB.__init__(self)
         self.connection = None
         self.ping_counter = 1
         self.last_pong = msg_pong()
+        self.timeout_factor = timeout_factor
+        self._transport = None
+        self.connected = False
+
+    @property
+    def is_connected(self):
+        return self._transport is not None
 
     def add_connection(self, conn):
         self.connection = conn
+        self.connected = True
 
     # Track the last getdata message we receive (used in the test)
     def on_getdata(self, conn, message):
@@ -112,6 +120,48 @@ class TestNode(NodeConnCB):
         self.ping_counter += 1
         return received_pong
 
+    def wait_for_disconnect(self, timeout=60):
+        test_function = lambda: not self.is_connected
+        self.wait_until(test_function, timeout=timeout, check_connected=False)
+
+    def wait_until(self, test_function_in, *, timeout=60, check_connected=True):
+        print(check_connected)
+        print(self.is_connected)
+        def test_function():
+            if check_connected:
+                print(check_connected)
+                print(self.is_connected)
+                assert self.is_connected
+            return test_function_in()
+
+        wait_until_helper(test_function, timeout=timeout, lock=mininode_lock, timeout_factor=self.timeout_factor)
+
+    # def test_connection(self):
+    #     while True:
+    #         try:
+    #             ready_to_read, ready_to_write, in_error = \
+    #                 select.select([self.connection], [self.connection], [self.connection], 5)
+    #         except select.error:
+    #             conn.shutdown(2)    # 0 = done receiving, 1 = done sending, 2 = both
+    #             conn.close()
+    #             # connection error event here, maybe reconnect
+    #             print('connection error')
+    #             break
+    #         if len(ready_to_read) > 0:
+    #             recv = conn.recv(2048)
+    #             # do stuff with received data
+    #             print(f'received: {recv}')
+    #         if len(ready_to_write) > 0:
+    #             # connection established, send some stuff
+    #             conn.send('some stuff')
+
+    def test_connection(self, timeout=60):
+        print(self.is_connected)
+        for _ in range(timeout):
+            print(self.connection)
+            if self.connection == None:
+                print("None")
+                return
 
 class AcceptBlockTest(BitcoinTestFramework):
     def add_options(self, parser):
@@ -323,22 +373,23 @@ class AcceptBlockTest(BitcoinTestFramework):
         self.nodes[0].getblock(block_1442f.hash)
 
         test_node.send_message(msg_block(block_1443))
+        print(test_node.is_connected)
 
         # At this point we've sent an obviously-bogus block, wait for full processing
         # without assuming whether we will be disconnected or not
-        try:
-            # Only wait a short while so the test doesn't take forever if we do get
-            # disconnected
-            test_node.sync_with_ping(timeout=1)
-        except AssertionError:
-            test_node.wait_for_disconnect()
+        # Only wait a short while so the test doesn't take forever if we do get
+        # disconnected
+        time.sleep(1)
+        
+        print(test_node.is_connected)
+        test_node.test_connection()
 
-            test_node = TestNode()   # connects to node (not whitelisted)
-            connections[0] = NodeConn('127.0.0.1', p2p_port(0), self.nodes[0], test_node)
-            test_node.add_connection(connections[0])
+        test_node = TestNode()   # connects to node (not whitelisted)
+        connections[0] = NodeConn('127.0.0.1', p2p_port(0), self.nodes[0], test_node)
+        test_node.add_connection(connections[0])
 
-            NetworkThread().start() # Start up network handling in another thread
-            test_node.wait_for_verack()
+        NetworkThread().start() # Start up network handling in another thread
+        test_node.wait_for_verack()
 
         # We should have failed reorg and switched back to 1442 (but have block 1443)
         assert_equal(self.nodes[0].getblockcount(), 1442)
@@ -352,11 +403,12 @@ class AcceptBlockTest(BitcoinTestFramework):
         headers_message.headers.append(CBlockHeader(block_1445))
         test_node.send_message(headers_message)
         test_node.wait_for_disconnect()
+        test_node.test_connection()
 
         # 9. Connect node1 to node0 and ensure it is able to sync
         connect_nodes(self.nodes[0], 1)
         sync_blocks([self.nodes[0], self.nodes[1]])
-        self.log.info("Successfully synced nodes 1 and 0")
+        print("Successfully synced nodes 1 and 0")
 
         [ c.disconnect_node() for c in connections ]
 
