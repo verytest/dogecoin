@@ -368,17 +368,13 @@ class AcceptBlockTest(BitcoinTestFramework):
         self.nodes[0].getblock(block_1442f.hash)
 
         test_node.send_message(msg_block(block_1443))
-        print(test_node.is_connected)
 
         # At this point we've sent an obviously-bogus block, wait for full processing
         # without assuming whether we will be disconnected or not
         # Only wait a short while so the test doesn't take forever if we do get
         # disconnected
-        time.sleep(5)
 
-        print(test_node.is_connected)
-        test_node.test_connection()
-
+        test_node.wait_for_disconnect()
         test_node = TestNode()   # connects to node (not whitelisted)
         connections[0] = NodeConn('127.0.0.1', p2p_port(0), self.nodes[0], test_node)
         test_node.add_connection(connections[0])
@@ -398,7 +394,6 @@ class AcceptBlockTest(BitcoinTestFramework):
         headers_message.headers.append(CBlockHeader(block_1445))
         test_node.send_message(headers_message)
         test_node.wait_for_disconnect()
-        test_node.test_connection()
 
         # 9. Connect node1 to node0 and ensure it is able to sync
         connect_nodes(self.nodes[0], 1)
