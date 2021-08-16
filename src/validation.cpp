@@ -2653,6 +2653,9 @@ bool InvalidateBlock(CValidationState& state, const CChainParams& chainparams, C
     LogPrint("Invalid Block %s.", pindex->GetBlockHash().ToString() );
 
     // Now mark the blocks we just disconnected as descendants invalid
+    // Note: this may not be all descendants, e.g. the disconnected block
+    // may be the root of competing block chains that have not settled into
+    // one single block chain yet.
     while (findexWasInChain && invalidWalkTip != pindex) {
         LogPrint("  Invalid Child Block %s.", invalidWalkTip->GetBlockHash().ToString() );
         invalidWalkTip->nStatus |= BLOCK_FAILED_CHILD;
