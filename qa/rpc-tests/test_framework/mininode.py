@@ -1685,6 +1685,8 @@ class NodeConn(asyncore.dispatcher):
             if len(t) > 0:
                 self.recvbuf += t
                 self.got_data()
+            else:
+                print("handle_read called without data... connection closed?")
         except:
             pass
 
