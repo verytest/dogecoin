@@ -1687,6 +1687,7 @@ class NodeConn(asyncore.dispatcher):
                 self.got_data()
             else:
                 print("handle_read called without data... connection closed?")
+                self.handle_close()
         except:
             pass
 

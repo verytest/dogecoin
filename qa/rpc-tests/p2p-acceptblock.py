@@ -115,21 +115,18 @@ class TestNode(NodeConnCB):
         return received_pong
 
     def wait_for_disconnect(self, timeout=60):
-        sleep_time = 0.05
+        if self.connection == None:
+            return True
 
-        while not self.has_been_disconnected and timeout > 0:
+        sleep_time = 0.05
+        is_closed = self.connection.state == "closed"
+
+        while not is_closed and timeout > 0:
             time.sleep(sleep_time)
             timeout -= sleep_time
+            is_closed = self.connection.state == "closed"
 
-            try:
-                ready_to_read, ready_to_write, in_error = \
-                select.select([self.connection], [self.connection], [self.connection], 5)
-            except select.error:
-                self.connection.shutdown(2)
-                conn.close()
-                self.has_been_disconnected = True
-
-        return self.self.has_been_disconnected
+        return is_closed
 
     # def test_connection(self):
     #     while True:
