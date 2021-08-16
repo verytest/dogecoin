@@ -73,16 +73,10 @@ class TestNode(NodeConnCB):
         self.ping_counter = 1
         self.last_pong = msg_pong()
         self.timeout_factor = timeout_factor
-        self._transport = None
-        self.connected = False
-
-    @property
-    def is_connected(self):
-        return self._transport is not None
 
     def add_connection(self, conn):
+        self.has_been_disconnected = False
         self.connection = conn
-        self.connected = True
 
     # Track the last getdata message we receive (used in the test)
     def on_getdata(self, conn, message):
@@ -121,20 +115,21 @@ class TestNode(NodeConnCB):
         return received_pong
 
     def wait_for_disconnect(self, timeout=60):
-        test_function = lambda: not self.is_connected
-        self.wait_until(test_function, timeout=timeout, check_connected=False)
+        sleep_time = 0.05
 
-    def wait_until(self, test_function_in, *, timeout=60, check_connected=True):
-        print(check_connected)
-        print(self.is_connected)
-        def test_function():
-            if check_connected:
-                print(check_connected)
-                print(self.is_connected)
-                assert self.is_connected
-            return test_function_in()
+        while not self.has_been_disconnected and timeout > 0:
+            time.sleep(sleep_time)
+            timeout -= sleep_time
 
-        wait_until_helper(test_function, timeout=timeout, lock=mininode_lock, timeout_factor=self.timeout_factor)
+            try:
+                ready_to_read, ready_to_write, in_error = \
+                select.select([self.connection], [self.connection], [self.connection], 5)
+            except select.error:
+                self.connection.shutdown(2)
+                conn.close()
+                self.has_been_disconnected = True
+
+        return self.self.has_been_disconnected
 
     # def test_connection(self):
     #     while True:
@@ -379,8 +374,8 @@ class AcceptBlockTest(BitcoinTestFramework):
         # without assuming whether we will be disconnected or not
         # Only wait a short while so the test doesn't take forever if we do get
         # disconnected
-        time.sleep(1)
-        
+        time.sleep(5)
+
         print(test_node.is_connected)
         test_node.test_connection()
 
