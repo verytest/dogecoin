@@ -169,7 +169,7 @@ AC_ARG_ENABLE([sse2],
   [AS_HELP_STRING([--enable-sse2],
   [enable SSE2 extensions for scrypt])],
   [use_sse2=$enableval],
-  [use_sse2=no])
+  [use_sse2=yes])
 
 AC_ARG_WITH([system-univalue],
   [AS_HELP_STRING([--with-system-univalue],
