@@ -27,12 +27,12 @@
  * online backup system.
  */
 
-#include "crypto/scrypt.h"
-#include "crypto/hmac_sha256.h"
+#include <crypto/scrypt.h>
+#include <crypto/hmac_sha256.h>
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <openssl/sha.h>
 
 #if defined(USE_SSE2) && !defined(USE_SSE2_ALWAYS)
 #ifdef _MSC_VER
@@ -43,7 +43,7 @@
 #include <cpuid.h>
 #endif
 #endif
-
+#ifndef __FreeBSD__
 static inline uint32_t be32dec(const void *pp)
 {
 	const uint8_t *p = (uint8_t const *)pp;
@@ -59,6 +59,8 @@ static inline void be32enc(void *pp, uint32_t x)
 	p[1] = (x >> 16) & 0xff;
 	p[0] = (x >> 24) & 0xff;
 }
+
+#endif
 
 /**
  * PBKDF2_SHA256(passwd, passwdlen, salt, saltlen, c, buf, dkLen):
@@ -117,6 +119,9 @@ PBKDF2_SHA256(const uint8_t *passwd, size_t passwdlen, const uint8_t *salt,
 
 #define ROTL(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
 
+#ifdef __clang__
+__attribute__((no_sanitize("unsigned-integer-overflow")))
+#endif // __clang__
 static inline void xor_salsa8(uint32_t B[16], const uint32_t Bx[16])
 {
 	uint32_t x00,x01,x02,x03,x04,x05,x06,x07,x08,x09,x10,x11,x12,x13,x14,x15;
@@ -216,14 +221,15 @@ void scrypt_1024_1_1_256_sp_generic(const char *input, char *output, char *scrat
 	PBKDF2_SHA256((const uint8_t *)input, 80, B, 128, 1, (uint8_t *)output, 32);
 }
 
-#if defined(USE_SSE2)
+#if USE_SSE2
 // By default, set to generic scrypt function. This will prevent crash in case when scrypt_detect_sse2() wasn't called
 void (*scrypt_1024_1_1_256_sp_detected)(const char *input, char *output, char *scratchpad) = &scrypt_1024_1_1_256_sp_generic;
 
-void scrypt_detect_sse2()
+std::string scrypt_detect_sse2()
 {
+    std::string ret;
 #if defined(USE_SSE2_ALWAYS)
-    printf("scrypt: using scrypt-sse2 as built.\n");
+    ret = "scrypt: using scrypt-sse2 as built.";
 #else // USE_SSE2_ALWAYS
     // 32bit x86 Linux or Windows, detect cpuid features
     unsigned int cpuid_edx=0;
@@ -241,20 +247,20 @@ void scrypt_detect_sse2()
     if (cpuid_edx & 1<<26)
     {
         scrypt_1024_1_1_256_sp_detected = &scrypt_1024_1_1_256_sp_sse2;
-        printf("scrypt: using scrypt-sse2 as detected.\n");
+        ret = "scrypt: using scrypt-sse2 as detected";
     }
     else
     {
         scrypt_1024_1_1_256_sp_detected = &scrypt_1024_1_1_256_sp_generic;
-        printf("scrypt: using scrypt-generic, SSE2 unavailable.\n");
+        ret = "scrypt: using scrypt-generic, SSE2 unavailable";
     }
 #endif // USE_SSE2_ALWAYS
+    return ret;
 }
 #endif
 
 void scrypt_1024_1_1_256(const char *input, char *output)
 {
-    thread_local char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
-    memset(scratchpad, 0, sizeof(scratchpad));
+    char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
     scrypt_1024_1_1_256_sp(input, output, scratchpad);
 }
