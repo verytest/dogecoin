@@ -165,12 +165,6 @@ AC_ARG_ENABLE([glibc-back-compat],
   [use_glibc_compat=$enableval],
   [use_glibc_compat=no])
 
-AC_ARG_ENABLE([sse2],
-  [AS_HELP_STRING([--enable-sse2],
-  [enable SSE2 extensions for scrypt])],
-  [use_sse2=$enableval],
-  [use_sse2=yes])
-
 AC_ARG_WITH([system-univalue],
   [AS_HELP_STRING([--with-system-univalue],
   [Build with system UniValue (default is no)])],
@@ -182,6 +176,20 @@ AC_ARG_ENABLE([zmq],
   [disable ZMQ notifications])],
   [use_zmq=$enableval],
   [use_zmq=yes])
+
+case $host in
+   x86_64-*)
+     arch_support_sse2=yes
+     ;;
+   default)
+     arch_support_sse2=no
+esac
+
+AC_ARG_ENABLE([sse2],
+  [AS_HELP_STRING([--enable-sse2],
+  [enable SSE2 extensions for scrypt])],
+  [use_sse2=$enableval],
+  [use_sse2=$arch_support_sse2])
 
 AC_ARG_WITH([protoc-bindir],[AS_HELP_STRING([--with-protoc-bindir=BIN_DIR],[specify protoc bin path])], [protoc_bin_path=$withval], [])
 
