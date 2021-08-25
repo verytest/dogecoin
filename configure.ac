@@ -1070,6 +1070,7 @@ AM_CONDITIONAL([USE_QRCODE], [test x$use_qr = xyes])
 AM_CONDITIONAL([USE_LCOV],[test x$use_lcov = xyes])
 AM_CONDITIONAL([GLIBC_BACK_COMPAT],[test x$use_glibc_compat = xyes])
 AM_CONDITIONAL([HARDEN],[test x$use_hardening = xyes])
+AM_CONDITIONAL([USE_SSE2], [test "x$use_sse2" = "xyes"])
 
 AC_DEFINE(CLIENT_VERSION_MAJOR, _CLIENT_VERSION_MAJOR, [Major version])
 AC_DEFINE(CLIENT_VERSION_MINOR, _CLIENT_VERSION_MINOR, [Minor version])
@@ -1157,6 +1158,7 @@ if test x$use_sse2 != xno; then
   CPPFLAGS="$CPPFLAGS -DUSE_SSE2=1"
 else
   AC_MSG_RESULT(no)
+  AC_DEFINE([USE_SSE2],[0],[Define if SSE2 support should be compiled in])
 fi
 
 ac_configure_args="${ac_configure_args} --disable-shared --with-pic --with-bignum=no --enable-module-recovery"
