@@ -1223,7 +1223,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     int64_t nStart;
 
-#if defined(USE_SSE2)
+#if USE_SSE2
     scrypt_detect_sse2();
 #endif
 
