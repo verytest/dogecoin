@@ -245,6 +245,17 @@ libdogecoin_wallet_a_SOURCES = \
   policy/rbf.cpp \
   $(BITCOIN_CORE_H)
 
+if USE_SSE2
+crypto_libdogecoin_crypto_scrypt_SOURCES = \
+  crypto/scrypt-sse2.cpp \
+	crypto/scrypt.cpp \
+	crypto/scrypt.h
+else
+crypto_libdogecoin_crypto_scrypt_SOURCES = \
+	crypto/scrypt.cpp \
+	crypto/scrypt.h
+endif
+
 # crypto primitives library
 crypto_libdogecoin_crypto_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_CONFIG_INCLUDES)
 crypto_libdogecoin_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
@@ -258,8 +269,7 @@ crypto_libdogecoin_crypto_a_SOURCES = \
   crypto/hmac_sha512.h \
   crypto/ripemd160.cpp \
   crypto/ripemd160.h \
-  crypto/scrypt.cpp \
-  crypto/scrypt.h \
+  $(crypto_libdogecoin_crypto_scrypt_SOURCES) \
   crypto/sha1.cpp \
   crypto/sha1.h \
   crypto/sha256.cpp \
