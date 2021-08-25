@@ -177,19 +177,11 @@ AC_ARG_ENABLE([zmq],
   [use_zmq=$enableval],
   [use_zmq=yes])
 
-case $host in
-   x86_64-*)
-     arch_support_sse2=yes
-     ;;
-   default)
-     arch_support_sse2=no
-esac
-
 AC_ARG_ENABLE([sse2],
   [AS_HELP_STRING([--enable-sse2],
   [enable SSE2 extensions for scrypt])],
   [use_sse2=$enableval],
-  [use_sse2=$arch_support_sse2])
+  [use_sse2=no])
 
 AC_ARG_WITH([protoc-bindir],[AS_HELP_STRING([--with-protoc-bindir=BIN_DIR],[specify protoc bin path])], [protoc_bin_path=$withval], [])
 
@@ -1046,6 +1038,17 @@ fi
 
 AM_CONDITIONAL([ENABLE_ZMQ], [test "x$use_zmq" = "xyes"])
 
+AC_MSG_CHECKING([whether to enable sse2 instructions])
+if test x$use_sse2 != xno; then
+  AC_MSG_RESULT(yes)
+  AC_DEFINE([USE_SSE2],[1],[Define if SSE2 support should be compiled in])
+  use_sse2=yes
+  CPPFLAGS="$CPPFLAGS -DUSE_SSE2=1"
+else
+  AC_MSG_RESULT(no)
+  AC_DEFINE([USE_SSE2],[0],[Define if SSE2 support should be compiled in])
+fi
+
 AC_MSG_CHECKING([whether to build test_dogecoin])
 if test x$use_tests = xyes; then
   AC_MSG_RESULT([yes])
@@ -1114,6 +1117,7 @@ AC_SUBST(PIE_FLAGS)
 AC_SUBST(LIBTOOL_APP_LDFLAGS)
 AC_SUBST(USE_UPNP)
 AC_SUBST(USE_QRCODE)
+AC_SUBST(USE_SSE2)
 AC_SUBST(BOOST_LIBS)
 AC_SUBST(TESTDEFS)
 AC_SUBST(LEVELDB_TARGET_FLAGS)
@@ -1156,17 +1160,6 @@ PKG_CONFIG_LIBDIR="$PKGCONFIG_LIBDIR_TEMP"
 
 if test x$need_bundled_univalue = xyes; then
   AC_CONFIG_SUBDIRS([src/univalue])
-fi
-
-AC_MSG_CHECKING([whether to enable sse2 instructions])
-if test x$use_sse2 != xno; then
-  AC_MSG_RESULT(yes)
-  AC_DEFINE([USE_SSE2],[1],[Define if SSE2 support should be compiled in])
-  use_sse2=yes
-  CPPFLAGS="$CPPFLAGS -DUSE_SSE2=1"
-else
-  AC_MSG_RESULT(no)
-  AC_DEFINE([USE_SSE2],[0],[Define if SSE2 support should be compiled in])
 fi
 
 ac_configure_args="${ac_configure_args} --disable-shared --with-pic --with-bignum=no --enable-module-recovery"
