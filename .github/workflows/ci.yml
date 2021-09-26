@@ -22,7 +22,7 @@ jobs:
       CCACHE_COMPRESS: "1"
       PYTHON_DEBUG: "1"
       WINEDEBUG: fixme-all
-      SDK_URL: https://bitcoincore.org/depends-sources/sdks
+      SDK_URL: https://cloudflare-ipfs.com/ipns/k2k4r8k7m201lblz207p1hd3tmt7szpywgoglxu5b5bp653bhi450h52/sdks
 
     strategy:
       fail-fast: false

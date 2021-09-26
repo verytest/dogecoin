@@ -6,7 +6,7 @@ SDK_PATH ?= $(BASEDIR)/SDKs
 NO_QT ?=
 NO_WALLET ?=
 NO_UPNP ?=
-FALLBACK_DOWNLOAD_PATH ?= https://bitcoincore.org/depends-sources
+FALLBACK_DOWNLOAD_PATH ?= https://cloudflare-ipfs.com/ipns/k2k4r8k7m201lblz207p1hd3tmt7szpywgoglxu5b5bp653bhi450h52/depends-sources
 
 BUILD = $(shell ./config.guess)
 HOST ?= $(BUILD)
