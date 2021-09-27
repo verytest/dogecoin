@@ -1,0 +1,28 @@
+Removes detection of xkb config on the build host, because that may
+not be the location of xkb config on the target.
+
+diff -dur a/qtbase/configure b/qtbase/configure
+--- a/qtbase/configure	2021-09-19 01:07:14.919084901 +0000
++++ b/qtbase/configure	2021-09-27 22:08:40.872700239 +0000
+@@ -5815,21 +5815,6 @@
+     fi
+     if [ "$CFG_XKBCOMMON" = "qt" ]; then
+         QT_CONFIG="$QT_CONFIG xkbcommon-qt"
+-        # detect XKB config root
+-        if [ "$CFG_XKB_CONFIG_ROOT" = "auto" ]; then
+-            if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkeyboard-config" 2> /dev/null; then
+-                CFG_XKB_CONFIG_ROOT="`$PKG_CONFIG --variable=xkb_base xkeyboard-config`"
+-            else
+-                # search for xkb configs in most probable locations
+-                if [ -d "/usr/share/X11/xkb" ]; then
+-                    # Linux
+-                    CFG_XKB_CONFIG_ROOT="/usr/share/X11/xkb"
+-                elif [ -d "/usr/local/share/X11/xkb" ]; then
+-                    # BSD UNIX
+-                    CFG_XKB_CONFIG_ROOT="/usr/local/share/X11/xkb"
+-                fi
+-            fi
+-        fi
+         QMakeVar set QMAKE_XKB_CONFIG_ROOT "$CFG_XKB_CONFIG_ROOT"
+         if [ "$CFG_XKB_CONFIG_ROOT" = "auto" ]; then
+             CFG_XKB_CONFIG_ROOT="not found"
