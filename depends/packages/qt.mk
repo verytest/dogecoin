@@ -90,6 +90,7 @@ $(package)_config_opts_darwin += -device-option MAC_LD64_VERSION=$(LD64_VERSION)
 endif
 
 $(package)_config_opts_linux  = -qt-xkbcommon
+$(package)_config_opts_linux += -xkb-config-root=/usr/share/X11/xkb
 $(package)_config_opts_linux += -qt-xcb
 $(package)_config_opts_linux += -system-freetype
 $(package)_config_opts_linux += -no-sm
