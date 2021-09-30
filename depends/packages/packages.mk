@@ -1,5 +1,8 @@
-packages:=boost openssl libevent zeromq nasm intel-ipsec-mb
+packages:=boost openssl libevent zeromq
 native_packages := native_ccache
+
+x86_64_linux_native_packages:=native_nasm
+x86_64_linux_packages:=intel-ipsec-mb
 
 qt_native_packages = native_protobuf
 qt_packages = qrencode protobuf zlib
