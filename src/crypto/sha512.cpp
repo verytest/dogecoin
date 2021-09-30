@@ -9,8 +9,8 @@
 #include <string.h>
 
 #if (defined(__ia64__) || defined(__x86_64__)) && \
-    (defined(__linux__) && !defined(__APPLE__))
-#define USE_AVX2
+    (defined(__linux__) && !defined(__APPLE__)) && \
+    (defined(__INTEL_AVX2__))
 #include <intel-ipsec-mb.h>
 #endif
 
@@ -20,7 +20,7 @@ namespace
 /// Internal SHA-512 implementation.
 namespace sha512
 {
-#ifndef USE_AVX2
+#ifndef __INTEL_AVX2__
 uint64_t inline Ch(uint64_t x, uint64_t y, uint64_t z) { return z ^ (x & (y ^ z)); }
 uint64_t inline Maj(uint64_t x, uint64_t y, uint64_t z) { return (x & y) | (z & (x | y)); }
 uint64_t inline Sigma0(uint64_t x) { return (x >> 28 | x << 36) ^ (x >> 34 | x << 30) ^ (x >> 39 | x << 25); }
@@ -54,7 +54,7 @@ void inline Initialize(uint64_t* s)
 /** Perform one SHA-512 transformation, processing a 128-byte chunk. */
 void Transform(uint64_t* s, const unsigned char* chunk)
 {
-#ifdef USE_AVX2
+#ifdef __INTEL_AVX2__
     // Perform SHA512 one block (Intel AVX2)
     sha512_one_block_avx2(chunk, s);
 #else

@@ -9,8 +9,8 @@
 #include <string.h>
 
 #if (defined(__ia64__) || defined(__x86_64__)) && \
-    (defined(__linux__) && !defined(__APPLE__))
-#define USE_AVX2
+    (defined(__linux__) && !defined(__APPLE__)) && \
+    (defined(__INTEL_AVX2__))
 #include <intel-ipsec-mb.h>
 #endif
 
@@ -21,7 +21,7 @@ namespace
 namespace sha1
 {
 
-#ifndef USE_AVX2
+#ifndef __INTEL_AVX2__
 /** One round of SHA-1. */
 void inline Round(uint32_t a, uint32_t& b, uint32_t c, uint32_t d, uint32_t& e, uint32_t f, uint32_t k, uint32_t w)
 {
@@ -54,7 +54,7 @@ const uint32_t k4 = 0xCA62C1D6ul;
 /** Perform a SHA-1 transformation, processing a 64-byte chunk. */
 void Transform(uint32_t* s, const unsigned char* chunk)
 {
-#ifdef USE_AVX2
+#ifdef __INTEL_AVX2__
     // Perform SHA1 one block (Intel AVX2)
     sha1_one_block_avx2(chunk, s);
 #else

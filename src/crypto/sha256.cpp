@@ -9,8 +9,8 @@
 #include <string.h>
 
 #if (defined(__ia64__) || defined(__x86_64__)) && \
-    (defined(__linux__) && !defined(__APPLE__))
-#define USE_AVX2
+    (defined(__linux__) && !defined(__APPLE__)) && \
+    (defined(__INTEL_AVX2__))
 #include <intel-ipsec-mb.h>
 #endif
 
@@ -20,7 +20,7 @@ namespace
 /// Internal SHA-256 implementation.
 namespace sha256
 {
-#ifndef USE_AVX2
+#ifndef __INTEL_AVX2__
 uint32_t inline Ch(uint32_t x, uint32_t y, uint32_t z) { return z ^ (x & (y ^ z)); }
 uint32_t inline Maj(uint32_t x, uint32_t y, uint32_t z) { return (x & y) | (z & (x | y)); }
 uint32_t inline Sigma0(uint32_t x) { return (x >> 2 | x << 30) ^ (x >> 13 | x << 19) ^ (x >> 22 | x << 10); }
@@ -54,7 +54,7 @@ void inline Initialize(uint32_t* s)
 /** Perform one SHA-256 transformation, processing a 64-byte chunk. */
 void Transform(uint32_t* s, const unsigned char* chunk)
 {
-#ifdef USE_AVX2
+#ifdef __INTEL_AVX2__
     // Perform SHA256 one block (Intel AVX2)
     sha256_one_block_avx2(chunk, s);
 #else
