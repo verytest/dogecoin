@@ -19,8 +19,8 @@ class FeeLimitTest(BitcoinTestFramework):
 
     def setup_network(self, split=False):
         self.nodes = []
-        self.nodes.append(start_node(0, self.options.tmpdir, []))
-        self.nodes.append(start_node(1, self.options.tmpdir, []))
+        self.nodes.append(start_node(0, self.options.tmpdir, ["-debug"]))
+        self.nodes.append(start_node(1, self.options.tmpdir, ["-debug"]))
 
         connect_nodes_bi(self.nodes,0,1)
 
@@ -72,6 +72,31 @@ class FeeLimitTest(BitcoinTestFramework):
         # Check the TX did not relay, so is only on node 0
         assert_equal(self.nodes[1].getmempoolinfo()['size'], 1)
         assert_equal(self.nodes[0].getmempoolinfo()['size'], 2)
+
+        # mine the previous txs
+        self.nodes[0].generate(1)
+        self.sync_all()
+
+        # Test acceptance of dust fees
+        dust_output = Decimal("0.1")
+        fee_rate = Decimal("0.01")
+        tx_fee = fee_rate * 226 / 1000
+        utx = self.nodes[0].listunspent()[0]
+        inputs = [ {'txid' : utx['txid'], 'vout' : utx['vout']} ]
+        outputs = {
+          self.nodes[0].getnewaddress() : dust_output,
+          self.nodes[0].getnewaddress() : utx['amount'] - dust_output - tx_fee
+        }
+        rawtx   = self.nodes[0].createrawtransaction(inputs, outputs)
+        signedtx = self.nodes[0].signrawtransaction(rawtx)
+        self.nodes[0].sendrawtransaction(signedtx["hex"])
+        assert_equal(self.nodes[0].getmempoolinfo()['size'], 1)
+        self.sync_all()
+
+        self.nodes[1].generate(1)
+        self.sync_all()
+        assert_equal(self.nodes[0].getmempoolinfo()['size'], 0)
+
 
 if __name__ == '__main__':
     FeeLimitTest().main()
