@@ -87,7 +87,8 @@ class P2PPolicyTests(BitcoinTestFramework):
         self.nodes = []
 
         # a Dogecoin Core node that behaves similar to mainnet policies
-        self.nodes.append(start_node(0, self.options.tmpdir, ["-debug", "-acceptnonstdtxn=0"]))
+        #self.nodes.append(start_node(0, self.options.tmpdir, ["-debug", "-acceptnonstdtxn=0"]))
+        self.nodes.append(start_node(0, self.options.tmpdir, ["-debug"]))
 
         # custom testnodes
         self.sendNode = self.create_testnode() # to send tx from
@@ -154,13 +155,13 @@ class P2PPolicyTests(BitcoinTestFramework):
         amount = koinu
         change = ten - amount - relay_fee_per_byte * 226 - relay_fee
         output = { self.tgtAddr : amount, self.srcAddr: change }
-        self.run_relay_test(output, 64)
+        self.run_relay_test(output, None)
 
         # test a 1 koinu output with insufficient fee
         amount = koinu
         change = ten - amount - relay_fee_per_byte * 225 - relay_fee + koinu
         output = { self.tgtAddr : amount, self.srcAddr: change }
-        self.run_relay_test(output, 64)
+        self.run_relay_test(output, 66)
 
 
     # test mempool acceptance and relay outcomes
