@@ -443,7 +443,7 @@
           <item>
             <widget class="QLabel" name="label_wallet_version_overlay">
               <property name="text">
-               <string>1.14</string>
+               <string></string>
               </property>
               <property name="pixmap">
                 <pixmap/>
@@ -452,10 +452,10 @@
                <bool>false</bool>
               </property>
               <property name="alignment">
-               <set>Qt::AlignCenter</set>
+               <set>Qt::AlignLeft|Qt::AlignBottom</set>
               </property>
               <property name="margin">
-               <number>-2</number>
+               <number>2</number>
               </property>
             </widget>
           </item>
