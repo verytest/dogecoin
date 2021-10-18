@@ -1232,7 +1232,7 @@ static UniValue AuxMiningCreateBlock(const CScript& scriptPubKey)
     result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0]->vout[0].nValue));
     result.push_back(Pair("bits", strprintf("%08x", pblock->nBits)));
     result.push_back(Pair("height", static_cast<int64_t> (pindexPrev->nHeight + 1)));
-    result.push_back(Pair("_target", HexStr(BEGIN(target), END(target))));
+    result.push_back(Pair("target", HexStr(BEGIN(target), END(target))));
 
     return result;
 }
@@ -1296,7 +1296,7 @@ UniValue createauxblock(const JSONRPCRequest& request)
             "  \"coinbasevalue\"      (numeric) value of the block's coinbase\n"
             "  \"bits\"               (string) compressed target of the block\n"
             "  \"height\"             (numeric) height of the block\n"
-            "  \"_target\"            (string) target in reversed byte order, deprecated\n"
+            "  \"target\"             (string) target in reversed byte order, deprecated\n"
             "}\n"
             "\nExamples:\n"
             + HelpExampleCli("createauxblock", "\"address\"")
