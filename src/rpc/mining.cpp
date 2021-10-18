@@ -1286,6 +1286,10 @@ UniValue createauxblock(const JSONRPCRequest& request)
         throw std::runtime_error(
             "createauxblock <address>\n"
             "\ncreate a new block and return information required to merge-mine it.\n"
+            "\n"
+            "caches the block for each distinct address given so that subsequent\n"
+            "requests at the same height do not trigger the creation of a new block\n"
+            "unless the cache is expired.\n"
             "\nArguments:\n"
             "1. address      (string, required) specify coinbase transaction payout address\n"
             "\nResult:\n"
