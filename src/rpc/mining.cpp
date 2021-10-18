@@ -49,7 +49,7 @@ UniValue GetNetworkHashPS(int lookup, int height) {
     // If lookup is -1, then use blocks since last difficulty change.
     if (lookup <= 0)
         lookup = pb->nHeight % Params().GetConsensus(pb->nHeight).DifficultyAdjustmentInterval() + 1;
-    // 
+    //
 
     // If lookup is larger than chain, then set it to chain length.
     if (lookup > pb->nHeight)
@@ -244,7 +244,7 @@ UniValue generatetoaddress(const JSONRPCRequest& request)
     CBitcoinAddress address(request.params[1].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Error: Invalid address");
-    
+
     boost::shared_ptr<CReserveScript> coinbaseScript(new CReserveScript());
     coinbaseScript->reserveScript = GetScriptForDestination(address.Get());
 
@@ -1135,6 +1135,139 @@ UniValue getauxblockbip22(const JSONRPCRequest& request)
     return BIP22ValidationResult(sc.state);
 }
 
+static CCriticalSection cs_auxblockCache;
+static std::map<uint256, CBlock*> mapNewBlock;
+static std::vector<std::unique_ptr<CBlockTemplate>> vNewBlockTemplate;
+
+static void AuxMiningCheck()
+{
+    if(!g_connman)
+        throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
+
+    if (g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL) == 0 && !Params().MineBlocksOnDemand())
+        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Dogecoin is not connected!");
+
+    if (IsInitialBlockDownload() && !Params().MineBlocksOnDemand())
+        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD,
+                           "Dogecoin is downloading blocks...");
+
+    /* This should never fail, since the chain is already
+       past the point of merge-mining start.  Check nevertheless.  */
+    {
+        LOCK(cs_main);
+        if (Params().GetConsensus(chainActive.Height() + 1).fAllowLegacyBlocks)
+            throw std::runtime_error("getauxblock method is not yet available");
+    }
+}
+
+static UniValue AuxMiningCreateBlock(const CScript& scriptPubKey)
+{
+    AuxMiningCheck();
+
+    LOCK(cs_auxblockCache);
+
+    /* Create a new block */
+    static unsigned nTransactionsUpdatedLast;
+    static const CBlockIndex* pindexPrev = nullptr;
+    static uint64_t nStart;
+    static std::map<CScriptID, CBlock*> curBlocks;
+    static unsigned nExtraNonce = 0;
+    CBlock* pblock = nullptr;
+
+    // Update block
+    // Dogecoin: Never mine witness tx
+    const bool fMineWitnessTx = false;
+    {
+      LOCK(cs_main);
+      CScriptID scriptID (scriptPubKey);
+      auto iter = curBlocks.find(scriptID);
+      if (iter != curBlocks.end()) pblock = iter->second;
+
+      if (pblock == nullptr
+          || pindexPrev != chainActive.Tip()
+          || (mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast
+              && GetTime() - nStart > 60))
+      {
+          if (pindexPrev != chainActive.Tip())
+          {
+              // Clear old blocks since they're obsolete now.
+              mapNewBlock.clear();
+              vNewBlockTemplate.clear();
+              curBlocks.clear();
+          }
+
+          // Create new block with nonce = 0 and extraNonce = 1
+          std::unique_ptr<CBlockTemplate> newBlock
+              = BlockAssembler(Params()).CreateNewBlock(scriptPubKey, fMineWitnessTx);
+          if (!newBlock)
+              throw JSONRPCError(RPC_OUT_OF_MEMORY, "out of memory");
+
+          // Update state only when CreateNewBlock succeeded
+          nTransactionsUpdatedLast = mempool.GetTransactionsUpdated();
+          pindexPrev = chainActive.Tip();
+          nStart = GetTime();
+
+          // Finalise it by setting the version and building the merkle root
+          IncrementExtraNonce(&newBlock->block, pindexPrev, nExtraNonce);
+          newBlock->block.SetAuxpowFlag(true);
+
+          // Save
+          pblock = &newBlock->block;
+          curBlocks[scriptID] = pblock;
+          mapNewBlock[pblock->GetHash()] = pblock;
+          vNewBlockTemplate.push_back(std::move(newBlock));
+      }
+    }
+
+    arith_uint256 target;
+    bool fNegative, fOverflow;
+    target.SetCompact(pblock->nBits, &fNegative, &fOverflow);
+    if (fNegative || fOverflow || target == 0)
+        throw std::runtime_error("invalid difficulty bits in block");
+
+    UniValue result(UniValue::VOBJ);
+    result.push_back(Pair("hash", pblock->GetHash().GetHex()));
+    result.push_back(Pair("chainid", pblock->GetChainId()));
+    result.push_back(Pair("previousblockhash", pblock->hashPrevBlock.GetHex()));
+    result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0]->vout[0].nValue));
+    result.push_back(Pair("bits", strprintf("%08x", pblock->nBits)));
+    result.push_back(Pair("height", static_cast<int64_t> (pindexPrev->nHeight + 1)));
+    result.push_back(Pair("_target", HexStr(BEGIN(target), END(target))));
+
+    return result;
+}
+
+static bool AuxMiningSubmitBlock(const std::string& hashHex, const std::string& auxpowHex)
+{
+    AuxMiningCheck();
+
+    LOCK(cs_auxblockCache);
+
+    uint256 hash;
+    hash.SetHex(hashHex);
+
+    const std::map<uint256, CBlock*>::iterator mit = mapNewBlock.find(hash);
+    if (mit == mapNewBlock.end())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "block hash unknown");
+    CBlock& block = *mit->second;
+
+    const std::vector<unsigned char> vchAuxPow = ParseHex(auxpowHex);
+    CDataStream ss(vchAuxPow, SER_GETHASH, PROTOCOL_VERSION);
+    CAuxPow pow;
+    ss >> pow;
+    block.SetAuxpow(new CAuxPow(pow));
+    assert(block.GetHash() == hash);
+
+    submitblock_StateCatcher sc(block.GetHash());
+    RegisterValidationInterface(&sc);
+    std::shared_ptr<const CBlock> shared_block
+      = std::make_shared<const CBlock>(block);
+    bool fAccepted = ProcessNewBlock(Params(), shared_block, true, nullptr);
+    UnregisterValidationInterface(&sc);
+
+    return fAccepted;
+}
+
 UniValue getauxblock(const JSONRPCRequest& request)
 {
     const UniValue response = getauxblockbip22(request);
@@ -1145,6 +1278,58 @@ UniValue getauxblock(const JSONRPCRequest& request)
 
     // this is a new block submission: return bool
     return response.isNull();
+}
+
+UniValue createauxblock(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+            "createauxblock <address>\n"
+            "\ncreate a new block and return information required to merge-mine it.\n"
+            "\nArguments:\n"
+            "1. address      (string, required) specify coinbase transaction payout address\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"hash\"               (string) hash of the created block\n"
+            "  \"chainid\"            (numeric) chain ID for this block\n"
+            "  \"previousblockhash\"  (string) hash of the previous block\n"
+            "  \"coinbasevalue\"      (numeric) value of the block's coinbase\n"
+            "  \"bits\"               (string) compressed target of the block\n"
+            "  \"height\"             (numeric) height of the block\n"
+            "  \"_target\"            (string) target in reversed byte order, deprecated\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("createauxblock", "\"address\"")
+            + HelpExampleRpc("createauxblock", "\"address\"")
+            );
+
+    // Check coinbase payout address
+    CBitcoinAddress coinbaseAddress(request.params[0].get_str());
+    if (!coinbaseAddress.IsValid())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid coinbase payout address");
+    const CScript scriptPubKey = GetScriptForDestination(coinbaseAddress.Get());
+
+    return AuxMiningCreateBlock(scriptPubKey);
+}
+
+UniValue submitauxblock(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 2)
+        throw std::runtime_error(
+            "submitauxblock <hash> <auxpow>\n"
+            "\nsubmit a solved auxpow for a previously block created by 'createauxblock'.\n"
+            "\nArguments:\n"
+            "1. hash      (string, required) hash of the block to submit\n"
+            "2. auxpow    (string, required) serialised auxpow found\n"
+            "\nResult:\n"
+            "xxxxx        (boolean) whether the submitted block was correct\n"
+            "\nExamples:\n"
+            + HelpExampleCli("submitauxblock", "\"hash\" \"serialised auxpow\"")
+            + HelpExampleRpc("submitauxblock", "\"hash\" \"serialised auxpow\"")
+            );
+
+    return AuxMiningSubmitBlock(request.params[0].get_str(),
+                                 request.params[1].get_str());
 }
 
 /* ************************************************************************** */
@@ -1159,6 +1344,8 @@ static const CRPCCommand commands[] =
     { "mining",             "submitblock",            &submitblock,            true,  {"hexdata","parameters"} },
     { "mining",             "getauxblock",            &getauxblock,            true,  {"hash", "auxpow"} },
 
+    { "mining",             "createauxblock",         &createauxblock,         true,  {"address"} },
+    { "mining",             "submitauxblock",         &submitauxblock,         true,  {"hash", "auxpow"} },
     { "generating",         "generate",               &generate,               true,  {"nblocks","maxtries","auxpow"} },
     { "generating",         "generatetoaddress",      &generatetoaddress,      true,  {"nblocks","address","maxtries","auxpow"} },
 
