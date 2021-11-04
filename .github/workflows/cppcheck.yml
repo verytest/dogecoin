@@ -31,7 +31,7 @@ jobs:
       run: ./autogen.sh && ./configure --enable-reduce-exports --enable-glibc-back-compat
 
     - name: Run Cppcheck
-      uses: Bedzior/cppcheck-action@v1.0
+      uses: Bedzior/run-cppcheck@v1.0
       with:
         enabled checks: all
         enable inconclusive: true
