@@ -37,13 +37,3 @@ jobs:
         generate report: true
         report name: cppcheck.txt
         path: ./src
-
-    - name: 'PR Comment'
-      uses: actions/github-script@0.3.0
-      if: github.event_name == 'pull_request'
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-          const { stdout } = await execa('cat', ['./cppcheck.txt']);
-          github.issues.createComment({ issue_number, owner, repo, body: "cppcheck report" + stdout });
