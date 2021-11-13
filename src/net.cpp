@@ -2881,7 +2881,7 @@ bool CConnman::AttemptToEvictIntolerantPeer()
 
     // Protect half the nodes that most recently sent us blocks.
     std::sort(vEvictionCandidates.begin(), vEvictionCandidates.end(), CompareNodeBlockTime);
-    vEvictionCandidates.erase(vEvictionCandidates.end() - static_cast<int>(vEvictionCandidates.size()) >> 1, vEvictionCandidates.end());
+    vEvictionCandidates.erase(vEvictionCandidates.end() - (static_cast<int>(vEvictionCandidates.size()) >> 1), vEvictionCandidates.end());
 
     if (vEvictionCandidates.empty())
         return false;
