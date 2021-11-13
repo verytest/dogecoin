@@ -1694,6 +1694,9 @@ void CConnman::ThreadOpenConnections()
 
     // Minimum time before next feeler connection (in microseconds).
     int64_t nNextFeeler = PoissonNextSend(nStart*1000*1000, FEELER_INTERVAL);
+
+    // Minimum time before next check for tolerant peers
+    int64_t nNextToleranceCheck = PoissonNextSend(nStart*1000*1000, TOLERANCE_INTERVAL);
     while (!interruptNet)
     {
         ProcessOneShot();
@@ -1765,6 +1768,10 @@ void CConnman::ThreadOpenConnections()
             if (nTime > nNextFeeler) {
                 nNextFeeler = PoissonNextSend(nTime, FEELER_INTERVAL);
                 fFeeler = true;
+            } else if (nTime > nNextToleranceCheck) {
+                nNextToleranceCheck = PoissonNextSend(nTime, nNextToleranceCheck);
+                if (!AttemptToEvictIntolerantPeer())
+                    continue;
             } else {
                 continue;
             }
@@ -2234,6 +2241,8 @@ bool CConnman::Start(CScheduler& scheduler, std::string& strNodeError, Options c
 
     nMaxOutboundLimit = connOptions.nMaxOutboundLimit;
     nMaxOutboundTimeframe = connOptions.nMaxOutboundTimeframe;
+
+    nTargetToleratingPeers = connOptions.nTargetToleratingPeers;
 
     SetBestHeight(connOptions.nBestHeight);
 
@@ -2828,4 +2837,66 @@ uint64_t CConnman::CalculateKeyedNetGroup(const CAddress& ad) const
     std::vector<unsigned char> vchNetGroup(ad.GetGroup());
 
     return GetDeterministicRandomizer(RANDOMIZER_ID_NETGROUP).Write(&vchNetGroup[0], vchNetGroup.size()).Finalize();
+}
+
+bool CConnman::AttemptToEvictIntolerantPeer()
+{
+    uint64_t nTolerantPeersFound = 0;
+    uint64_t nOutboundPeersFound = 0;
+    std::vector<NodeEvictionCandidate> vEvictionCandidates;
+    {
+        LOCK(cs_vNodes);
+
+        BOOST_FOREACH(CNode *node, vNodes) {
+            if (node->fInbound)
+                continue;
+            if (node->fDisconnect)
+                continue;
+
+            nOutboundPeersFound += 1;
+
+            // never evict whitelisted peers
+            if (node->fWhitelisted)
+                continue;
+
+            if (node->ToleratesOurFeePolicy())
+            {
+                nTolerantPeersFound += 1;
+                continue;
+            }
+
+            NodeEvictionCandidate candidate = {node->id, node->nTimeConnected, node->nMinPingUsecTime,
+                                               node->nLastBlockTime, node->nLastTXTime,
+                                               (node->nServices & nRelevantServices) == nRelevantServices,
+                                               node->fRelayTxes, node->pfilter != NULL, node->addr, node->nKeyedNetGroup};
+            vEvictionCandidates.push_back(candidate);
+        }
+    }
+
+    if (nTolerantPeersFound >= nTargetToleratingPeers)
+        return false;
+
+    if (nOutboundPeersFound < nMaxOutbound || vEvictionCandidates.empty())
+        return false;
+
+    // Protect half the nodes that most recently sent us blocks.
+    std::sort(vEvictionCandidates.begin(), vEvictionCandidates.end(), CompareNodeBlockTime);
+    vEvictionCandidates.erase(vEvictionCandidates.end() - std::min(vEvictionCandidates.size() >> 1, static_cast<int>(vEvictionCandidates.size())), vEvictionCandidates.end());
+
+    if (vEvictionCandidates.empty())
+        return false;
+
+    // Sort candidates by the time they have been connected: last in, first out.
+    std::sort(vEvictionCandidates.begin(), vEvictionCandidates.end(), ReverseCompareNodeTimeConnected);
+
+    NodeId evicted = vEvictionCandidates.front().id;
+    LOCK(cs_vNodes);
+    for(std::vector<CNode*>::const_iterator it(vNodes.begin()); it != vNodes.end(); ++it) {
+        if ((*it)->GetId() == evicted) {
+            (*it)->fDisconnect = true;
+            return true;
+        }
+    }
+
+    return false;
 }
