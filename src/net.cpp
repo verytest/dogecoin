@@ -2859,6 +2859,15 @@ bool CConnman::AttemptToEvictIntolerantPeer()
             if (node->fWhitelisted)
                 continue;
 
+            // never evict addnode nodes
+            if (node->fAddnode)
+                continue;
+
+            // never evict feelers
+            if (node->fFeeler)
+                continue;
+
+            // we don't want to evict nodes that tolerate our policy
             if (node->ToleratesOurFeePolicy())
             {
                 nTolerantPeersFound += 1;
@@ -2876,20 +2885,27 @@ bool CConnman::AttemptToEvictIntolerantPeer()
     if (nTolerantPeersFound >= nTargetToleratingPeers)
         return false;
 
-    if (nOutboundPeersFound < nMaxOutbound || vEvictionCandidates.empty())
+    if (nOutboundPeersFound < nMaxOutbound)
         return false;
-
-    // Protect half the nodes that most recently sent us blocks.
-    std::sort(vEvictionCandidates.begin(), vEvictionCandidates.end(), CompareNodeBlockTime);
-    vEvictionCandidates.erase(vEvictionCandidates.end() - (static_cast<int>(vEvictionCandidates.size()) >> 1), vEvictionCandidates.end());
 
     if (vEvictionCandidates.empty())
+    {
+        LogPrint("net", "%s: No suitable non-conformant peers to evict", __func__);
         return false;
+    }
+
+    if (vEvictionCandidates.size() > 1) {
+        // Protect half the peers that most recently sent us blocks.
+        std::sort(vEvictionCandidates.begin(), vEvictionCandidates.end(), CompareNodeBlockTime);
+        vEvictionCandidates.erase(vEvictionCandidates.end() - (static_cast<int>(vEvictionCandidates.size()) >> 1), vEvictionCandidates.end());
+    }
 
     // Sort candidates by the time they have been connected: last in, first out.
     std::sort(vEvictionCandidates.begin(), vEvictionCandidates.end(), ReverseCompareNodeTimeConnected);
 
     NodeId evicted = vEvictionCandidates.front().id;
+    LogPrint("net", "%s: Attempting to evict peer=%u", __func__, evicted);
+
     LOCK(cs_vNodes);
     for(std::vector<CNode*>::const_iterator it(vNodes.begin()); it != vNodes.end(); ++it) {
         if ((*it)->GetId() == evicted) {
