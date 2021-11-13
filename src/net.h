@@ -152,7 +152,7 @@ public:
         unsigned int nReceiveFloodSize = 0;
         uint64_t nMaxOutboundTimeframe = 0;
         uint64_t nMaxOutboundLimit = 0;
-        uint64_t nTargetToleratingPeers = 0;
+        int nTargetToleratingPeers = 0;
     };
     CConnman(uint64_t seed0, uint64_t seed1);
     ~CConnman();
@@ -356,7 +356,7 @@ private:
     uint64_t nMaxOutboundCycleStartTime;
     uint64_t nMaxOutboundLimit;
     uint64_t nMaxOutboundTimeframe;
-    uint64_t nTargetToleratingPeers;
+    int nTargetToleratingPeers;
 
     // Whitelisted ranges. Any node connecting from these is automatically
     // whitelisted (as well as those connecting to whitelisted binds).
