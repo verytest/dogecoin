@@ -2841,8 +2841,8 @@ uint64_t CConnman::CalculateKeyedNetGroup(const CAddress& ad) const
 
 bool CConnman::AttemptToEvictIntolerantPeer()
 {
-    uint64_t nTolerantPeersFound = 0;
-    uint64_t nOutboundPeersFound = 0;
+    int nTolerantPeersFound = 0;
+    int nOutboundPeersFound = 0;
     std::vector<NodeEvictionCandidate> vEvictionCandidates;
     {
         LOCK(cs_vNodes);
@@ -2881,7 +2881,7 @@ bool CConnman::AttemptToEvictIntolerantPeer()
 
     // Protect half the nodes that most recently sent us blocks.
     std::sort(vEvictionCandidates.begin(), vEvictionCandidates.end(), CompareNodeBlockTime);
-    vEvictionCandidates.erase(vEvictionCandidates.end() - std::min(vEvictionCandidates.size() >> 1, static_cast<int>(vEvictionCandidates.size())), vEvictionCandidates.end());
+    vEvictionCandidates.erase(vEvictionCandidates.end() - static_cast<int>(vEvictionCandidates.size()) >> 1, vEvictionCandidates.end());
 
     if (vEvictionCandidates.empty())
         return false;
