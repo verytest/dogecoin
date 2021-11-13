@@ -1768,8 +1768,8 @@ void CConnman::ThreadOpenConnections()
             if (nTime > nNextFeeler) {
                 nNextFeeler = PoissonNextSend(nTime, FEELER_INTERVAL);
                 fFeeler = true;
-            } else if (nTime > nNextToleranceCheck) {
-                nNextToleranceCheck = PoissonNextSend(nTime, nNextToleranceCheck);
+            } else if (nTargetToleratingPeers > 0 && nTime > nNextToleranceCheck) {
+                nNextToleranceCheck = PoissonNextSend(nTime, TOLERANCE_INTERVAL);
                 if (!AttemptToEvictIntolerantPeer())
                     continue;
             } else {
