@@ -3,19 +3,20 @@ Unauthenticated REST Interface
 
 The REST API can be enabled with the `-rest` option.
 
-The interface runs on the same port as the JSON-RPC interface, by default port 8332 for mainnet and port 18332 for testnet.
+The interface runs on the same port as the JSON-RPC interface, by default port
+22555 for mainnet and port 44555 for testnet.
 
 Supported API
 -------------
 
-####Transactions
+#### Transactions
 `GET /rest/tx/<TX-HASH>.<bin|hex|json>`
 
 Given a transaction hash: returns a transaction in binary, hex-encoded binary, or JSON formats.
 
 For full TX query capability, one must enable the transaction index via "txindex=1" command line / configuration option.
 
-####Blocks
+#### Blocks
 `GET /rest/block/<BLOCK-HASH>.<bin|hex|json>`
 `GET /rest/block/notxdetails/<BLOCK-HASH>.<bin|hex|json>`
 
@@ -25,7 +26,7 @@ The HTTP request and response are both handled entirely in-memory, thus making m
 
 With the /notxdetails/ option JSON response will only contain the transaction hash instead of the complete transaction details. The option only affects the JSON response.
 
-####Blockheaders
+#### Blockheaders
 `GET /rest/headers/<COUNT>/<BLOCK-HASH>.<bin|hex|json>`
 
 Given a block hash: returns <COUNT> amount of blockheaders in upward direction.
@@ -35,7 +36,7 @@ Given a block hash: returns <COUNT> amount of blockheaders in upward direction.
 
  Given a height: returns hash of block in best-block-chain at height provided.
 
-####Chaininfos
+#### Chaininfo
 `GET /rest/chaininfo.json`
 
 Returns various state info regarding block chain processing.
@@ -51,7 +52,7 @@ Only supports JSON as output format.
 * pruneheight : (numeric) heighest block available
 * softforks : (array) status of softforks in progress
 
-####Query UTXO set
+#### Query UTXO set
 `GET /rest/getutxos/<checkmempool>/<txid>-<n>/<txid>-<n>/.../<txid>-<n>.<bin|hex|json>`
 
 The getutxo command allows querying of the UTXO set given a set of outpoints.
@@ -60,7 +61,7 @@ https://github.com/bitcoin/bips/blob/master/bip-0064.mediawiki
 
 Example:
 ```
-$ curl localhost:18332/rest/getutxos/checkmempool/b2cdfd7b89def827ff8af7cd9bff7627ff72e5e8b0f71210f92ea7a4000c5d75-0.json 2>/dev/null | json_pp
+$ curl localhost:22555/rest/getutxos/checkmempool/b2cdfd7b89def827ff8af7cd9bff7627ff72e5e8b0f71210f92ea7a4000c5d75-0.json 2>/dev/null | json_pp
 {
    "chaintipHash" : "00000000fb01a7f3745a717f8caebee056c484e6e0bfe4a9591c235bb70506fb",
    "chainHeight" : 325347,
@@ -100,4 +101,8 @@ Only supports JSON as output format.
 
 Risks
 -------------
-Running a web browser on the same node with a REST enabled dogecoind can be a risk. Accessing prepared XSS websites could read out tx/block data of your node by placing links like `<script src="http://127.0.0.1:8332/rest/tx/1234567890.json">` which might break the nodes privacy.
+Running a web browser on the same node with a REST enabled dogecoind can be a
+risk. Accessing prepared XSS websites could read out tx/block data of your node
+by placing links like
+`<script src="http://127.0.0.1:22555/rest/tx/1234567890.json">`
+which might break the nodes privacy.
