@@ -78,19 +78,16 @@ task:
   env:
     FILE_ENV: "./ci/test/00_setup_env_native_qt5.sh"
 
-# Disabled until we can diagnose the false positive thread deadlock warning that causes
-# feature_csv_activate.py to fail. It's likely that retrying this after BDB is updated to 5.3
-# is a good idea, given the error is in BDB.
-# task:
-#  name: 'x86_64 Linux  [GOAL: install]  [focal]  [depends, sanitizers: thread (TSan), no gui]'
-#  << : *GLOBAL_TASK_TEMPLATE
-#  container:
-#    image: ubuntu:focal
-#    cpu: 4  # Double CPU and Memory to avoid timeout
-#    memory: 16G
-#  env:
-#    MAKEJOBS: "-j8"
-#    FILE_ENV: "./ci/test/00_setup_env_native_tsan.sh"
+task:
+  name: 'x86_64 Linux  [GOAL: install]  [focal]  [depends, sanitizers: thread (TSan), no gui]'
+  << : *GLOBAL_TASK_TEMPLATE
+  container:
+    image: ubuntu:focal
+    cpu: 4  # Double CPU and Memory to avoid timeout
+    memory: 16G
+  env:
+    MAKEJOBS: "-j8"
+    FILE_ENV: "./ci/test/00_setup_env_native_tsan.sh"
 
 task:
   name: 'x86_64 Linux  [GOAL: install]  [focal]  [depends, sanitizers: memory (MSan)]'
